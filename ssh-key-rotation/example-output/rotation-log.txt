@@ -1,0 +1,4 @@
+[INFO] Starting SSH key rotation for enzo@192.168.64.2
+[INFO] New keypair generated: id_rsa_rotated_2025-04-22_14-07-20
+[INFO] Public key copied to 192.168.64.2
+[INFO] SSH key rotation script completed at Tue Apr 22 14:07:21 EDT 2025
