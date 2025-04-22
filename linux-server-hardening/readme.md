@@ -1,2 +1,72 @@
-# Linux Server Hardening
-Project details will go here.
+# Linux Server Hardening Lab
+
+## Overview
+This project focuses on hardening a Linux server (Ubuntu 22.04 ARM) using common security best practices. The goal was to build a baseline-secure system by locking down remote access, enforcing password policies, and setting up basic intrusion detection and audit logging.
+
+The VM was configured locally on a MacBook using UTM and SSH accessed directly from the host machine.
+
+---
+
+## Hardening Steps
+
+### 1. SSH Key-Only Login
+- Disabled password-based SSH authentication.
+- Disabled root login over SSH.
+- Configured key-based login using SSH keys generated on the Mac host.
+
+### 2. Firewall (UFW)
+- Default policy set to deny all incoming traffic.
+- Explicitly allowed SSH (port 22/tcp).
+- Applied rate limiting to slow down brute-force attempts on SSH.
+
+### 3. Fail2ban
+- Installed and configured Fail2ban to monitor SSH login attempts.
+- Set to ban IP addresses after 5 failed login attempts within a 10-minute window.
+- Ban duration set to 1 hour.
+
+### 4. Automatic Security Updates
+- Enabled unattended-upgrades to automatically apply security patches daily.
+- Confirmed configuration via `/etc/apt/apt.conf.d/50unattended-upgrades` and `/etc/apt/apt.conf.d/20auto-upgrades`.
+
+### 5. Password Policy Enforcement
+- Enforced minimum password length of 12 characters.
+- Required at least one uppercase letter, one lowercase letter, one number, and one special character.
+- Configured password aging: 90-day max password age, 7-day minimum between changes, 14-day expiration warning.
+
+### 6. Audit Logging (`auditd`)
+- Installed and configured auditd to monitor:
+  - Changes to `/etc/passwd`, `/etc/group`, `/etc/shadow`, `/etc/gshadow`.
+  - SSH configuration changes.
+  - Use of `sudo` and `su`.
+  - Login and authentication events.
+- Made audit rules immutable to prevent tampering without a reboot.
+
+### 7. Legal Warning Banner
+- Added a pre-login SSH warning banner via `/etc/issue.net`.
+- Configured post-login message of the day (MOTD).
+- Banner explains that unauthorized access is prohibited and all activity is logged.
+
+---
+
+## Tools and Technologies Used
+- Ubuntu 22.04 LTS (ARM)
+- UTM (virtualization on MacBook)
+- OpenSSH
+- UFW Firewall
+- Fail2ban
+- Auditd / Ausearch / Aureport
+- PAM (`pam_pwquality.so`) for password complexity enforcement
+- Unattended Upgrades (APT)
+
+---
+
+## Lessons Learned
+- How to properly secure SSH access and avoid common misconfigurations.
+- The importance of layering defensive controls (firewall + Fail2ban + key-based auth).
+- How auditd works for tracking critical system events.
+- Reinforced understanding of basic Linux administration and compliance-focused hardening techniques.
+
+---
+
+## Notes
+This was a personal project focused on learning and applying foundational Linux security hardening steps. The setup is a good baseline, but additional layers like AppArmor/SELinux, IDS/IPS tools, and centralized logging would be next steps in a production environment.
