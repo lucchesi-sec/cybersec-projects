@@ -33,9 +33,11 @@ Example:
 [WARNING] Old key detected in authorized_keys.
 Do you want to remove the old key? [y/N]:
 
-## Screenshots
-Successful SSH Key Rotation and Login Test:
-(Insert screenshot: screenshots/key-rotation-success.png)
+## 📸 Screenshots
+
+### Successful SSH Key Rotation and Login Test
+![SSH Key Rotation Output](screenshots/key-rotation-success.png)
+
 
 ## Notes
 - Tested on Ubuntu 22.04.
