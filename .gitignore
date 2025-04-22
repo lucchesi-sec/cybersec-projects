@@ -175,3 +175,8 @@ cython_debug/
 
 # Ignore all generated SSH keys
 id_rsa_rotated_*
+# Prevent accidental key commits
+id_rsa_rotated_*
+*.pem
+*.key
+
