@@ -28,3 +28,13 @@
 [INFO] Checking for old key in authorized_keys...
 [INFO] Old key fingerprint not found. No action taken.
 [INFO] SSH key rotation completed at Tue Apr 22 14:40:21 EDT 2025
+[INFO] Old key fingerprint detected: SHA256:nGcXTTfSUc4NwKTGrwcKZxu9nsiQ++vYQGmMCEu4Xhs
+[INFO] Generating new SSH keypair in /Users/enzolucchesi/.ssh/rotated-keys: id_rsa_rotated_2025-04-22_15-26-49
+[INFO] Copying new public key to 192.168.64.2
+[INFO] Testing login with new key...
+[INFO] Backing up authorized_keys on remote server to ~/.ssh/authorized_keys.backup-2025-04-22_15-26-49
+[INFO] Checking for old key in authorized_keys...
+[WARNING] Old key detected in authorized_keys.
+[INFO] Removing old key...
+[SUCCESS] Old key removed.
+[INFO] SSH key rotation completed at Tue Apr 22 15:27:05 EDT 2025
