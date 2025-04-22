@@ -47,6 +47,27 @@ The VM was configured locally on a MacBook using UTM and SSH accessed directly f
 - Banner explains that unauthorized access is prohibited and all activity is logged.
 
 ---
+## 📸 Screenshots
+
+### SSH Login with Legal Warning Banner
+![SSH login with banner](screenshots/ssh-login-banner.png)
+
+---
+
+### UFW Firewall Status
+![UFW firewall status](screenshots/ufw-status.png)
+
+---
+
+### Fail2ban SSH Protection Status
+![Fail2ban SSH status](screenshots/fail2ban-status.png)
+
+---
+
+### Auditd Executable Summary Report
+![Audit report summary](screenshots/auditd-exec-summary.png)
+
+---
 
 ## Tools and Technologies Used
 - Ubuntu 22.04 LTS (ARM)
