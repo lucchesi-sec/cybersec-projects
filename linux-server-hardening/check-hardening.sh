@@ -1,74 +1,99 @@
-#!/bin/bash
+# Rebuilding the full checker script with password policy verification and optional user-specific check
 
-# Linux Server Hardening Checker Script
-# Colored output and scoring included
+script = """#!/bin/bash
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Linux Server Hardening Check Script (Enhanced)
+# Includes colored output, score summary, and user-specific password policy check
+
+GREEN="\\e[32m"
+RED="\\e[31m"
+YELLOW="\\e[33m"
+RESET="\\e[0m"
 
 PASS_COUNT=0
-FAIL_COUNT=0
+TOTAL_CHECKS=8
 
-check() {
-    if $1; then
-        echo -e "${GREEN}✅ $2${NC}"
-        ((PASS_COUNT++))
-    else
-        echo -e "${RED}❌ WARNING: $3${NC}"
-        ((FAIL_COUNT++))
-    fi
+print_result() {
+  if [ "$1" -eq 0 ]; then
+    echo -e "${GREEN}✅ PASS:${RESET} $2"
+    ((PASS_COUNT++))
+  else
+    echo -e "${RED}❌ FAIL:${RESET} $2"
+  fi
 }
 
-echo "============================"
-echo " Linux Server Hardening Check "
-echo "============================"
+echo -e "\\n============================"
+echo -e " Linux Server Hardening Check "
+echo -e "============================\\n"
 
-# 1. SSH password login disabled
-echo -e "\n[SSH CONFIG]"
-check "[[ \$(grep -E '^PasswordAuthentication[[:space:]]+no' /etc/ssh/sshd_config) ]]"     "PasswordAuthentication disabled"     "PasswordAuthentication may be enabled"
+# 1. Check SSH password login
+echo "[SSH CONFIG]"
+grep -q "^PasswordAuthentication no" /etc/ssh/sshd_config
+print_result $? "PasswordAuthentication is disabled"
 
-# 2. UFW firewall status
-echo -e "\n[FIREWALL STATUS]"
-check "ufw status | grep -q 'active'"     "UFW is active"     "UFW is inactive"
+# 2. Check UFW firewall status
+echo -e "\\n[FIREWALL STATUS]"
+ufw status | grep -q "Status: active"
+print_result $? "UFW firewall is active"
 
-# 3. Fail2Ban status
-echo -e "\n[FAIL2BAN STATUS]"
-check "systemctl is-active fail2ban | grep -q 'active'"     "Fail2Ban is running"     "Fail2Ban is not running"
+# 3. Check Fail2Ban status
+echo -e "\\n[FAIL2BAN STATUS]"
+systemctl is-active fail2ban | grep -q "active"
+print_result $? "Fail2Ban service is running"
 
-# 4. Automatic updates (unattended-upgrades)
-echo -e "\n[AUTOMATIC UPDATES]"
-check "grep -q '^Unattended-Upgrade::Automatic-Reboot "true";' /etc/apt/apt.conf.d/50unattended-upgrades"     "Automatic updates configured"     "Automatic updates may not be configured"
+# 4. Check for unattended-upgrades
+echo -e "\\n[AUTOMATIC UPDATES]"
+grep -q "^Unattended-Upgrade::Automatic-Reboot \\"true\\";" /etc/apt/apt.conf.d/50unattended-upgrades
+print_result $? "Unattended security upgrades are enabled"
 
-# 5. Password aging policy
-echo -e "\n[PASSWORD POLICY]"
-PASS_MAX_DAYS=$(grep '^PASS_MAX_DAYS' /etc/login.defs | awk '{print $2}')
-if [[ $PASS_MAX_DAYS -le 90 && $PASS_MAX_DAYS -gt 0 ]]; then
-    echo -e "${GREEN}✅ Password aging policy set (PASS_MAX_DAYS: $PASS_MAX_DAYS)${NC}"
-    ((PASS_COUNT++))
+# 5. Check password aging policy (system-wide)
+echo -e "\\n[PASSWORD POLICY]"
+PASS_MAX_DAYS=$(grep "^PASS_MAX_DAYS" /etc/login.defs | awk '{print $2}')
+PASS_MIN_DAYS=$(grep "^PASS_MIN_DAYS" /etc/login.defs | awk '{print $2}')
+PASS_WARN_AGE=$(grep "^PASS_WARN_AGE" /etc/login.defs | awk '{print $2}')
+
+if [[ "$PASS_MAX_DAYS" -le 90 && "$PASS_MIN_DAYS" -ge 7 && "$PASS_WARN_AGE" -ge 14 ]]; then
+  print_result 0 "Password aging policy enforced (MAX_DAYS=$PASS_MAX_DAYS, MIN_DAYS=$PASS_MIN_DAYS, WARN_AGE=$PASS_WARN_AGE)"
 else
-    echo -e "${RED}❌ WARNING: Password aging policy not set properly (PASS_MAX_DAYS: $PASS_MAX_DAYS)${NC}"
-    ((FAIL_COUNT++))
+  print_result 1 "Password aging policy NOT enforced properly (MAX_DAYS=$PASS_MAX_DAYS, MIN_DAYS=$PASS_MIN_DAYS, WARN_AGE=$PASS_WARN_AGE)"
 fi
 
-# 6. Auditd status
-echo -e "\n[AUDIT LOGGING]"
-check "systemctl is-active auditd | grep -q 'active'"     "auditd is running"     "auditd is not running"
-
-# 7. Warning banner presence
-echo -e "\n[WARNING BANNER]"
-check "grep -q 'Unauthorized access prohibited' /etc/issue.net"     "Warning banner is configured"     "No warning banner detected"
-
-# Score summary
-TOTAL_CHECKS=$((PASS_COUNT + FAIL_COUNT))
-echo -e "\n============================"
-echo -e " Hardening Check Complete"
-echo -e " Score: ${GREEN}${PASS_COUNT} Passed${NC}, ${RED}${FAIL_COUNT} Failed${NC} out of ${YELLOW}${TOTAL_CHECKS} Checks${NC}"
-echo "============================"
-
-if [[ $FAIL_COUNT -gt 0 ]]; then
-    echo -e "${RED}❌ Some hardening checks failed. Please review the warnings above.${NC}"
+# Optional: Check user-specific password policy
+USER_CHECK="enzo"
+echo -e "\\n[USER-SPECIFIC PASSWORD POLICY CHECK for $USER_CHECK]"
+CHAGE_OUTPUT=$(chage -l "$USER_CHECK")
+if echo "$CHAGE_OUTPUT" | grep -q "Maximum number of days between password change: 90" && \
+   echo "$CHAGE_OUTPUT" | grep -q "Minimum number of days between password change: 7" && \
+   echo "$CHAGE_OUTPUT" | grep -q "Number of days of warning before password expires: 14"; then
+  print_result 0 "Password aging policy applied correctly for user $USER_CHECK"
 else
-    echo -e "${GREEN}✅ All hardening checks passed successfully!${NC}"
+  print_result 1 "Password aging policy NOT properly set for user $USER_CHECK"
 fi
+
+# 6. Check auditd status
+echo -e "\\n[AUDIT LOGGING]"
+systemctl is-active auditd | grep -q "active"
+print_result $? "auditd service is running"
+
+# 7. Check warning banner
+echo -e "\\n[WARNING BANNER]"
+grep -q "Unauthorized access prohibited" /etc/issue.net
+print_result $? "Login banner is configured"
+
+# Summary
+echo -e "\\n============================"
+echo -e " Hardening Score: ${YELLOW}$PASS_COUNT / $TOTAL_CHECKS${RESET}"
+if [ "$PASS_COUNT" -eq "$TOTAL_CHECKS" ]; then
+  echo -e "${GREEN}✅ All checks passed. System is hardened.${RESET}"
+else
+  echo -e "${YELLOW}⚠️  Some hardening checks failed. Review recommended.${RESET}"
+fi
+echo -e "============================"
+"""
+
+# Save the updated checker script
+script_path = "/mnt/data/check-hardening.sh"
+with open(script_path, "w") as file:
+    file.write(script)
+
+script_path
