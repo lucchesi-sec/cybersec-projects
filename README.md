@@ -22,8 +22,28 @@ Includes configuration files, audit logs, and an automation script to collect th
 
 ---
 
+### ✅ [SSH Key Rotation Automation](./ssh-key-rotation/)
+An automated script for rotating SSH keys on Linux servers with safety and audit logging features:
+- Supports multiple old keys via `old-keys.txt`.
+- Automatically detects old key fingerprints and matches against the server’s `authorized_keys`.
+- Backs up the existing `authorized_keys` before any changes.
+- Prompts per old key found before removal to prevent accidental lockouts.
+- Full session logging for auditability.
+
+---
+
 ## 🎯 Purpose
 This repo serves as my personal cybersecurity lab space. The focus is on learning by doing — applying security concepts in a way that directly maps to real-world environments.
+
+---
+
+## 🛠️ Repository History Notice
+
+> **Important:**
+> The commit history of this repository was rewritten on **April 22, 2025** to correct early misconfigured commit author identity.
+> Only the intended contributor (`lucchesi-sec`) is now reflected in the history.
+>
+> See [HISTORY.md](./HISTORY.md) for details.
 
 ---
 
