@@ -2,3 +2,13 @@
 [INFO] New keypair generated: id_rsa_rotated_2025-04-22_14-07-20
 [INFO] Public key copied to 192.168.64.2
 [INFO] SSH key rotation script completed at Tue Apr 22 14:07:21 EDT 2025
+[INFO] Old key fingerprint detected: SHA256:71ZfStVINK+gfbopPe0+Mr2qGcaNmIAtD0q/MHAi/NM
+[INFO] Generating new SSH keypair: id_rsa_rotated_2025-04-22_14-14-25
+[INFO] Copying new public key to 192.168.64.2
+[INFO] Testing login with new key...
+[INFO] Backing up authorized_keys on remote server to ~/.ssh/authorized_keys.backup-2025-04-22_14-14-25
+[INFO] Checking for old key in authorized_keys...
+[WARNING] Old key detected in authorized_keys.
+[INFO] Removing old key...
+[SUCCESS] Old key removed.
+[INFO] SSH key rotation completed at Tue Apr 22 14:14:34 EDT 2025
