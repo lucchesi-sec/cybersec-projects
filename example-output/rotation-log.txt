@@ -1,0 +1,4 @@
+2025-04-24 14:07:20 [INFO] Old key fingerprint detected: SHA256:nGcXTTfSUc4NwKTGrwcKZxu9nsiQ++vYQGmMCEu4Xhs
+2025-04-24 14:07:20 [INFO] Generating new SSH keypair in /Users/enzolucchesi/.ssh/rotated-keys: id_rsa_rotated_2025-04-24_14-07-20
+2025-04-24 14:07:20 [INFO] Copying new public key to 192.168.64.2
+2025-04-24 14:07:21 [ERROR] Failed to copy new key
