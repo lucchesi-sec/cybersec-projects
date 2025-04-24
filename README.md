@@ -45,6 +45,18 @@ Includes configuration files, testing scripts, and a detailed installation guide
 
 ---
 
+### ✅ [Password Strength Analyzer](./password-analyzer/)
+A Python-based tool for comprehensive password security evaluation according to NIST and OWASP guidelines:
+- Password scoring against security best practices
+- Detection of common patterns and vulnerabilities
+- Entropy calculation and complexity analysis
+- Secure password generation capabilities
+- Interactive CLI with detailed recommendations
+
+Includes test suite, dictionary data, and educational security guidance.
+
+---
+
 ## 🎯 Purpose
 This repo serves as my personal cybersecurity lab space. The focus is on learning by doing — applying security concepts in a way that directly maps to real-world environments.
 
