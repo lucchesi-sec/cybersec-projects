@@ -57,6 +57,19 @@ Includes test suite, dictionary data, and educational security guidance.
 
 ---
 
+### ✅ [Basic Malware Analysis Lab](./malware-analysis-lab/)
+A safe and educational tool for performing static analysis on potentially malicious files:
+- File type identification and hash calculation
+- PE (Portable Executable) header analysis
+- String extraction and pattern detection
+- YARA rule matching for suspicious patterns
+- High entropy detection for packed/encrypted content
+- Safe analysis environment with no execution
+
+Includes comprehensive analysis script, YARA rules, and educational documentation with safety protocols.
+
+---
+
 ## 🎯 Purpose
 This repo serves as my personal cybersecurity lab space. The focus is on learning by doing — applying security concepts in a way that directly maps to real-world environments.
 

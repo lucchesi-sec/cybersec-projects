@@ -94,6 +94,7 @@ Basic installation scripts and integration guidance can be found in the [`elk-st
 - The importance of layering defensive controls (firewall + Fail2ban + key-based auth).
 - How auditd works for tracking critical system events.
 - Reinforced understanding of basic Linux administration and compliance-focused hardening techniques.
+- The value of centralized logging (e.g., using ELK) for aggregating and analyzing security-relevant events (like auditd logs, firewall blocks, failed logins) from a hardened system.
 
 ---
 
