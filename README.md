@@ -75,16 +75,6 @@ This repo serves as my personal cybersecurity lab space. The focus is on learnin
 
 ---
 
-## 🛠️ Repository History Notice
-
-> **Important:**
-> The commit history of this repository was rewritten on **April 22, 2025** to correct early misconfigured commit author identity.
-> Only the intended contributor (`lucchesi-sec`) is now reflected in the history.
->
-> See [HISTORY.md](./HISTORY.md) for details.
-
----
-
 ## 🚀 What's Next
 Future additions may include:
 - 
