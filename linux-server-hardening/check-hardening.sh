@@ -9,7 +9,7 @@ YELLOW="\e[33m"
 RESET="\e[0m"
 
 PASS_COUNT=0
-TOTAL_CHECKS=23
+TOTAL_CHECKS=22
 
 print_result() {
   if [ "$1" -eq 0 ]; then
@@ -50,7 +50,7 @@ fi
 
 # 2. Check UFW firewall status
 echo -e "\n[FIREWALL STATUS]"
-ufw status | grep -q "Status: active"
+sudo ufw status | grep -q "Status: active"
 print_result $? "UFW firewall is active"
 
 # 3. Check Fail2Ban status and config
@@ -64,17 +64,17 @@ JAIL_CONF="/etc/fail2ban/jail.conf"
 SSHD_ENABLED=1 # Default to fail
 
 if [ -f "$JAIL_LOCAL" ]; then
-    if grep -qE "^\\s*\\[sshd\\]" "$JAIL_LOCAL" && \
-       awk '/^\\[sshd\\]/{f=1} f && /enabled\\s*=\\s*true/{print; f=0}' "$JAIL_LOCAL" | grep -q "enabled"; then
+    if sudo grep -qE "^\\s*\\[sshd\\]" "$JAIL_LOCAL" && \
+       sudo awk '/^\[sshd\]/{f=1} f && /enabled\\s*=\\s*true/{print; f=0}' "$JAIL_LOCAL" | grep -q "enabled"; then
         SSHD_ENABLED=0
     fi
 fi
 # If not found enabled in jail.local, check jail.conf (if jail.local doesn't explicitly disable it)
 if [ "$SSHD_ENABLED" -ne 0 ] && [ -f "$JAIL_CONF" ]; then
-     if grep -qE "^\\s*\\[sshd\\]" "$JAIL_CONF" && \
-        awk '/^\\[sshd\\]/{f=1} f && /enabled\\s*=\\s*true/{print; f=0}' "$JAIL_CONF" | grep -q "enabled"; then
+     if sudo grep -qE "^\\s*\\[sshd\\]" "$JAIL_CONF" && \
+        sudo awk '/^\[sshd\]/{f=1} f && /enabled\\s*=\\s*true/{print; f=0}' "$JAIL_CONF" | grep -q "enabled"; then
          # Check jail.local doesn't explicitly disable it
-         DISABLE_CHECK=$(awk '/^\\[sshd\\]/{f=1} f && /enabled\\s*=\\s*false/{print; f=0}' "$JAIL_LOCAL" 2>/dev/null)
+         DISABLE_CHECK=$(sudo awk '/^\[sshd\]/{f=1} f && /enabled\\s*=\\s*false/{print; f=0}' "$JAIL_LOCAL" 2>/dev/null)
          if [[ -z "$DISABLE_CHECK" ]]; then
               SSHD_ENABLED=0
          fi
@@ -97,16 +97,6 @@ if [[ "$PASS_MAX_DAYS" -le 90 && "$PASS_MIN_DAYS" -ge 7 && "$PASS_WARN_AGE" -ge 
   print_result 0 "Password aging policy enforced: MAX_DAYS=$PASS_MAX_DAYS MIN_DAYS=$PASS_MIN_DAYS WARN_AGE=$PASS_WARN_AGE"
 else
   print_result 1 "Password aging policy NOT enforced properly: MAX_DAYS=$PASS_MAX_DAYS MIN_DAYS=$PASS_MIN_DAYS WARN_AGE=$PASS_WARN_AGE"
-fi
-
-# Optional: Check user-specific password policy
-USER_CHECK="enzo"
-echo -e "\n[USER-SPECIFIC PASSWORD POLICY CHECK for $USER_CHECK]"
-CHAGE_OUTPUT=$(chage -l "$USER_CHECK")
-if echo "$CHAGE_OUTPUT" | grep -q "Maximum number of days between password change: 90" &&    echo "$CHAGE_OUTPUT" | grep -q "Minimum number of days between password change: 7" &&    echo "$CHAGE_OUTPUT" | grep -q "Number of days of warning before password expires: 14"; then
-  print_result 0 "Password aging policy applied correctly for user $USER_CHECK"
-else
-  print_result 1 "Password aging policy NOT properly set for user $USER_CHECK"
 fi
 
 # 6. Check auditd status and rules

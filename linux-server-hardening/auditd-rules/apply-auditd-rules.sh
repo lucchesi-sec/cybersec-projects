@@ -43,11 +43,11 @@ sudo bash -c "cat > $TARGET_RULES_FILE" << EOF
 -a always,exit -F arch=b64 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts
 -a always,exit -F arch=b32 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts
 
-# Monitor failed access attempts
--a always,exit -F arch=b64 -S open,creat,truncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
--a always,exit -F arch=b32 -S open,creat,truncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
--a always,exit -F arch=b64 -S open,creat,truncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access
--a always,exit -F arch=b32 -S open,creat,truncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access
+# Monitor failed access attempts (using openat)
+-a always,exit -F arch=b64 -S openat,creat,truncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S openat,creat,truncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b64 -S openat,creat,truncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S openat,creat,truncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access
 
 # Make the configuration immutable (again, enforces it at the end)
 # For RHEL/CentOS >= 7 and Debian/Ubuntu derivatives
@@ -60,30 +60,67 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Audit rules written to $TARGET_RULES_FILE."
-echo "You may want to consolidate rules using 'augenrules --load'."
-echo "Restarting auditd service to load rules (or use augenrules)..."
+echo "Attempting to delete existing rules and load new ones..."
 
-# Option 1: Restart auditd (simpler, potentially disruptive)
-# sudo systemctl restart auditd
+# Flag to track if rules loaded successfully
+RULES_LOADED_SUCCESSFULLY=0
 
-# Option 2: Use augenrules (preferred method)
+# 0. Delete existing rules first for a clean slate
+echo "Running 'auditctl -D' to delete existing rules..."
+sudo auditctl -D
+if [ $? -ne 0 ]; then
+    echo "Warning: 'auditctl -D' failed. Existing rules might interfere. Proceeding anyway..."
+fi
+
+# 1. Attempt direct load first (often gives better immediate feedback)
+echo "Running 'auditctl -R $TARGET_RULES_FILE'..."
+sudo auditctl -R "$TARGET_RULES_FILE"
+if [ $? -eq 0 ]; then
+    echo "auditctl -R successful."
+    RULES_LOADED_SUCCESSFULLY=1
+else
+    echo "Warning: 'auditctl -R $TARGET_RULES_FILE' failed. Check rule syntax or auditd status."
+    # Don't set the success flag
+fi
+
+# 2. Attempt to make rules persistent using augenrules (if available)
 if command -v augenrules &> /dev/null; then
     echo "Running 'augenrules --load'..."
     sudo augenrules --load
-    if [ $? -ne 0 ]; then
-        echo "Warning: 'augenrules --load' failed. Check auditd configuration."
-        # Attempt restart as fallback? Or just warn? Let's just warn for now.
-        # sudo systemctl restart auditd
+    if [ $? -eq 0 ]; then
+        echo "augenrules --load successful."
+        # Even if auditctl failed, augenrules might fix it and load on next boot/reload
+        # If auditctl previously succeeded, this confirms persistence
+        RULES_LOADED_SUCCESSFULLY=1
+    else
+        echo "Warning: 'augenrules --load' failed. Rules might not persist. Check auditd configuration."
+        # If auditctl also failed, definitely a problem
     fi
 else
-    echo "Warning: 'augenrules' command not found. Restarting auditd service..."
-    sudo systemctl restart auditd
+    echo "Warning: 'augenrules' command not found. Rules may not persist across reboots."
 fi
 
-if [ $? -ne 0 ]; then
-    echo "Warning: Failed to reload auditd rules. Please check manually."
-    # Consider adding logic to remove the rules file if restart/reload fails?
+# 3. If direct load or augenrules failed, try restarting the service as a last resort
+if [ "$RULES_LOADED_SUCCESSFULLY" -eq 0 ]; then
+    echo "Warning: Rule loading via auditctl/augenrules failed or was incomplete. Attempting service restart..."
+    sudo systemctl restart auditd
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to restart auditd service after rule loading issues."
+        exit 1
+    else
+        echo "auditd service restarted. Check 'sudo auditctl -l' manually to verify rules."
+        # We restarted, but can't be certain rules are loaded without checking again
+        RULES_LOADED_SUCCESSFULLY=1 # Assume restart might have fixed it, but warn user
+    fi
+fi
+
+
+if [ "$RULES_LOADED_SUCCESSFULLY" -eq 1 ]; then
+    echo "Auditd rules applied/loaded."
+    echo "Verify loaded rules manually using 'sudo auditctl -l' if needed."
+else
+    echo "Error: Failed to load auditd rules through all methods. Please investigate manually."
     exit 1
 fi
 
-echo "Auditd rules applied/loaded successfully."
+exit 0

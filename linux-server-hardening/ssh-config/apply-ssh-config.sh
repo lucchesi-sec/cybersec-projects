@@ -81,9 +81,9 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Restarting SSH service to apply changes..."
-sudo systemctl restart sshd
+sudo systemctl restart ssh
 if [ $? -ne 0 ]; then
-    echo "Warning: Failed to restart sshd service. Please check manually."
+    echo "Warning: Failed to restart ssh service. Please check manually."
     exit 1
 fi
 
