@@ -70,6 +70,18 @@ Includes comprehensive analysis script, YARA rules, and educational documentatio
 
 ---
 
+### ✅ [AWS Security Scanner](./aws-security-scanner/)
+A Python tool for detecting common security misconfigurations in AWS S3 buckets:
+- Identifies publicly accessible buckets
+- Checks for server-side encryption settings
+- Verifies access logging configuration
+- Provides detailed remediation recommendations
+- Generates formatted reports for security review
+
+Includes colored CLI output and CSV/text reporting capabilities.
+
+---
+
 ## 🎯 Purpose
 This repo serves as my personal cybersecurity lab space. The focus is on learning by doing — applying security concepts in a way that directly maps to real-world environments.
 
