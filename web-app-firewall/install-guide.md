@@ -1,4 +1,6 @@
-# ModSecurity WAF Installation and Configuration Guide
+# ModSecurity WAF Installation and Configuration Guide 🤖
+
+> **Note:** This is a demonstration guide showing how to install and configure ModSecurity WAF. The steps have been tested on Ubuntu 22.04 but may need adaptation for your specific environment.
 
 This guide provides step-by-step instructions for installing and configuring ModSecurity with OWASP Core Rule Set (CRS) on Ubuntu 22.04 with Apache.
 
