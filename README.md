@@ -45,7 +45,7 @@ Includes configuration files, testing scripts, and a detailed installation guide
 
 ---
 
-### ✅ [Password Strength Analyzer](./password-analyzer/)
+### ✅ [Password Strength Analyzer](./password-analyzer/) 🤖
 A Python-based tool for comprehensive password security evaluation according to NIST and OWASP guidelines:
 - Password scoring against security best practices
 - Detection of common patterns and vulnerabilities
@@ -57,7 +57,7 @@ Includes test suite, dictionary data, and educational security guidance.
 
 ---
 
-### ✅ [Basic Malware Analysis Lab](./malware-analysis-lab/)
+### ✅ [Basic Malware Analysis Lab](./malware-analysis-lab/) 🤖
 A safe and educational tool for performing static analysis on potentially malicious files:
 - File type identification and hash calculation
 - PE (Portable Executable) header analysis
@@ -70,7 +70,7 @@ Includes comprehensive analysis script, YARA rules, and educational documentatio
 
 ---
 
-### ✅ [AWS Security Scanner](./aws-security-scanner/)
+### ✅ [AWS Security Scanner](./aws-security-scanner/) 🤖
 A Python tool for detecting common security misconfigurations in AWS S3 buckets:
 - Identifies publicly accessible buckets
 - Checks for server-side encryption settings
@@ -87,11 +87,19 @@ This repo serves as my personal cybersecurity lab space. The focus is on learnin
 
 ---
 
+## 🤖 AI Assistance Note
+Projects marked with 🤖 were developed with significant AI assistance as learning exercises. These projects helped me understand security concepts and code structure while I continue to develop my programming skills. The Linux Server Hardening and SSH Key Rotation projects were primarily developed independently, with minimal AI input.
+
+---
+
 ## 🚀 What's Next
-Future additions may include:
-- 
-- 
-- 
+Future additions as I continue learning may include:
+- Simple network scanner using bash scripts
+- Docker security basics with container hardening examples
+- Automated security report generation with bash
+- Basic log analysis scripts for intrusion detection
+- Simple firewall rule configuration templates
+- Practical security cheatsheets for common services
 
 ---
 
