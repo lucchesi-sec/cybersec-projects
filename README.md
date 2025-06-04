@@ -1,3 +1,9 @@
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![PowerShell](https://img.shields.io/badge/PowerShell-Automation-blue)
+![AWS](https://img.shields.io/badge/AWS-Security-green)
+![Linux](https://img.shields.io/badge/Linux-Hardening-yellow)
+![Security+](https://img.shields.io/badge/Security%2B-In%20Progress-orange)
+
 # Cybersecurity Projects
 
 This repository contains hands-on security projects focused on practical skills in system hardening, cloud security, and compliance. Each project is designed to demonstrate real-world security practices beyond certifications and theory.
