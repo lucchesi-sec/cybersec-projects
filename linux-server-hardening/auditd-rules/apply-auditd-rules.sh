@@ -1,30 +1,21 @@
 #!/bin/bash
 set -e # Exit immediately if a command exits with a non-zero status.
 
-# Script to apply basic auditd rules with a more aggressive reset
+# Script to apply basic auditd rules using a standard approach
 
 RULES_DIR="/etc/audit/rules.d"
 OUR_RULES_FILE_BASENAME="99-hardening-rules.rules"
 TARGET_RULES_FILE_SRC="${RULES_DIR}/${OUR_RULES_FILE_BASENAME}"
-COMPILED_RULES_FILE="/etc/audit/audit.rules"
-RULES_BACKUP_DIR="/etc/audit/rules.d.bak_$(date +%Y%m%d_%H%M%S)"
 
-echo "Attempting to apply auditd rules with aggressive reset and cleanup..."
+# Backup existing source rules file if it exists
+if [ -f "$TARGET_RULES_FILE_SRC" ]; then
+    BACKUP_AUDIT_RULES_FILE="${TARGET_RULES_FILE_SRC}.bak_$(date +%Y%m%d_%H%M%S)"
+    echo "Backing up existing $TARGET_RULES_FILE_SRC to $BACKUP_AUDIT_RULES_FILE..."
+    sudo cp "$TARGET_RULES_FILE_SRC" "$BACKUP_AUDIT_RULES_FILE"
+fi
 
-# --- Stop auditd and prepare for clean slate ---
-echo "Stopping auditd service..."
-sudo systemctl stop auditd || echo "Warning: auditd stop failed, it might not have been running."
-
-echo "Removing old compiled rules file $COMPILED_RULES_FILE (if it exists)..."
-sudo rm -f "$COMPILED_RULES_FILE"
-
-echo "Backing up existing rules from $RULES_DIR to $RULES_BACKUP_DIR..."
-sudo mkdir -p "$RULES_BACKUP_DIR"
-# Move all existing .rules files, then we'll write ours fresh
-sudo find "$RULES_DIR" -maxdepth 1 -name '*.rules' -exec mv {} "$RULES_BACKUP_DIR/" \; || echo "No existing .rules files to backup, or error during backup."
-
-# --- Write our new rules file ---
 echo "Creating/Overwriting audit rules source file: $TARGET_RULES_FILE_SRC"
+# Create the rules file content
 sudo bash -c "cat > $TARGET_RULES_FILE_SRC" << EOF
 # Auditd rules for hardening (Lucchesi-Sec)
 
@@ -68,83 +59,74 @@ EOF
 
 if [ $? -ne 0 ]; then
     echo "Error: Failed to write audit rules to $TARGET_RULES_FILE_SRC. Aborting."
-    # Attempt to restore backed up rules before exiting if any were moved
-    if [ -d "$RULES_BACKUP_DIR" ]; then
-        sudo find "$RULES_BACKUP_DIR" -name '*.rules' -exec mv {} "$RULES_DIR/" \; || echo "Warning: Failed to restore rules from $RULES_BACKUP_DIR"
-    fi
     exit 1
 fi
 echo "Audit rules source file written to $TARGET_RULES_FILE_SRC."
 
-# --- Compile and Load Rules ---
-RULES_APPLIED_CORRECTLY=0
-if command -v augenrules &> /dev/null; then
-    echo "Running 'augenrules' to compile rules from $RULES_DIR into $COMPILED_RULES_FILE..."
-    if sudo augenrules; then
-        echo "augenrules compilation successful."
-        # At this point, /etc/audit/audit.rules should contain ONLY our rules.
-        # The systemd service unit for auditd will run 'augenrules --load' on start,
-        # which effectively loads /etc/audit/audit.rules.
-        RULES_APPLIED_CORRECTLY=1
-    else
-        echo "ERROR: 'augenrules' compilation failed. Rules will not be persistent or correctly loaded."
-    fi
-else
-    echo "Warning: 'augenrules' command not found. Attempting direct load of $TARGET_RULES_FILE_SRC for current session."
-    # This is a fallback if augenrules isn't there, less ideal for persistence.
-    set +e
-    AUDITCTL_R_OUTPUT=$(sudo auditctl -R "$TARGET_RULES_FILE_SRC" 2>&1)
-    AUDITCTL_R_EXIT_CODE=$?
-    set -e
-    if [ "$AUDITCTL_R_EXIT_CODE" -eq 0 ]; then
-        echo "auditctl -R $TARGET_RULES_FILE_SRC successful for current session."
-        RULES_APPLIED_CORRECTLY=1
-    else
-        echo "ERROR: 'auditctl -R $TARGET_RULES_FILE_SRC' failed with exit code $AUDITCTL_R_EXIT_CODE."
-        echo "auditctl output:"
-        echo "$AUDITCTL_R_OUTPUT"
-    fi
+echo "Attempting to load audit rules..."
+
+# Ensure auditd is running before attempting to load rules via augenrules or restart
+if ! sudo systemctl is-active --quiet auditd; then
+    echo "auditd service is not active, attempting to start it..."
+    sudo systemctl start auditd
+    sleep 1 # Give it a moment
 fi
 
-# --- Start auditd and Verify ---
-echo "Attempting to start auditd service..."
-if sudo systemctl start auditd; then
-    echo "auditd service started successfully."
-    if [ "$RULES_APPLIED_CORRECTLY" -eq 1 ]; then
-        echo "Auditd rules should be active. Verifying with 'auditctl -l'..."
-        sleep 2 # Give a moment for service to fully start and load rules
-        sudo auditctl -l
-        # Check if immutable flag is set
+# Clear any currently loaded rules in the kernel.
+# This should work if rules are not immutable (e.g., after a fresh reboot before auditd loads immutable rules).
+echo "Attempting to delete currently loaded kernel audit rules with 'auditctl -D'..."
+if sudo auditctl -D; then
+    echo "auditctl -D successful (existing rules cleared or no rules were loaded)."
+else
+    echo "Warning: 'auditctl -D' failed. This is problematic if rules are already loaded and immutable."
+    echo "This script might fail to apply new rules if the current configuration is locked."
+fi
+
+# Load rules using augenrules (standard method)
+echo "Running 'augenrules --load' to compile and load rules..."
+set +e # Allow augenrules to fail so we can capture its output/status
+AUGENRULES_OUTPUT=$(sudo augenrules --load 2>&1)
+AUGENRULES_EXIT_CODE=$?
+set -e
+
+if [ "$AUGENRULES_EXIT_CODE" -eq 0 ]; then
+    echo "augenrules --load reported success."
+    RULES_APPLIED_CORRECTLY=1
+else
+    echo "ERROR: 'augenrules --load' failed with exit code $AUGENRULES_EXIT_CODE."
+    echo "augenrules output:"
+    echo "$AUGENRULES_OUTPUT"
+    echo "Attempting a fallback by restarting auditd service..."
+    set +e
+    sudo systemctl restart auditd
+    RESTART_EXIT_CODE=$?
+    set -e
+    if [ "$RESTART_EXIT_CODE" -eq 0 ]; then
+        echo "auditd service restarted. Rules *might* have been loaded from compiled /etc/audit/audit.rules."
+        echo "Checking status..."
+        # Check if rules are loaded and immutable after restart
         if sudo auditctl -s | grep -q "enabled 2"; then
-            echo "Audit rules are IMMUTABLE (enabled 2)."
+            echo "Post-restart check: Audit rules ARE immutable (enabled 2)."
+            RULES_APPLIED_CORRECTLY=1
         else
-            echo "Warning: Audit rules are NOT immutable (enabled != 2). Check 'auditctl -s'."
-            RULES_APPLIED_CORRECTLY=0 # Consider this a failure if not immutable
+            echo "Post-restart check: Audit rules are NOT immutable. Rule application likely failed."
+            RULES_APPLIED_CORRECTLY=0
         fi
     else
-        echo "Warning: auditd started, but rule compilation/loading encountered issues. Check 'auditctl -l'."
+        echo "ERROR: Fallback restart of auditd also failed."
+        RULES_APPLIED_CORRECTLY=0
     fi
-else
-    echo "ERROR: Failed to start auditd service."
-    RULES_APPLIED_CORRECTLY=0
 fi
 
 if [ "$RULES_APPLIED_CORRECTLY" -eq 1 ]; then
-    echo "Auditd rules applied, auditd service started, and rules confirmed immutable."
+    echo "Audit rules successfully applied and should be active and immutable."
+    echo "Final loaded rules:"
+    sudo auditctl -l
+    sudo auditctl -s
 else
-    echo "Error: Auditd rule application failed or rules not immutable. Please review messages above."
-    # Attempt to restore backed up rules if any were moved
-    if [ -d "$RULES_BACKUP_DIR" ]; then
-        echo "Attempting to restore original rules from $RULES_BACKUP_DIR..."
-        sudo find "$RULES_BACKUP_DIR" -name '*.rules' -exec mv -f {} "$RULES_DIR/" \; || echo "Warning: Failed to restore rules from $RULES_BACKUP_DIR"
-        echo "Restoring $COMPILED_RULES_FILE if backup exists..."
-        # This part is tricky as we don't have a direct backup of compiled file in this script version
-        # Best effort: re-run augenrules if original files are back
-        sudo augenrules || echo "Warning: augenrules failed after attempting to restore original .rules.d files."
-        sudo systemctl restart auditd || echo "Warning: auditd restart failed after attempting to restore."
-    fi
+    echo "ERROR: Failed to apply auditd rules correctly."
     exit 1
 fi
 
-echo "apply-auditd-rules.sh completed successfully."
+echo "apply-auditd-rules.sh completed."
 exit 0
