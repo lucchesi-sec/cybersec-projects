@@ -86,21 +86,26 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Applying sysctl settings..."
-# Use -p with the specific file to load only these settings,
-# or use --system to reload all files from /etc/sysctl.d/, /run/sysctl.d/, /usr/lib/sysctl.d/, /etc/sysctl.conf
-# Using --system is generally safer and recommended.
-sudo sysctl --system
+echo "Ensuring systemd-sysctl service is enabled and applying settings..."
+# Ensure the service that applies sysctl settings on boot is enabled
+sudo systemctl enable systemd-sysctl.service >/dev/null 2>&1 || echo "Warning: Failed to enable systemd-sysctl.service. It might not exist or another issue occurred."
+
+# Restart the service to apply all sysctl configurations from files, similar to boot
+sudo systemctl restart systemd-sysctl.service
 if [ $? -ne 0 ]; then
-    echo "Warning: Failed to apply sysctl settings using 'sysctl --system'. Check configuration."
-    # Attempting with -p as a fallback
-    # sudo sysctl -p "$SYSCTL_CONFIG_FILE"
-    # if [ $? -ne 0 ]; then
-    #    echo "Error: Failed to apply sysctl settings using 'sysctl -p' as well."
-    #    exit 1
-    # fi
-    exit 1 # Exit if --system fails, as it indicates a broader issue.
+    echo "Warning: Failed to restart systemd-sysctl.service. Settings might not persist on reboot."
+    # As a fallback, or if systemd-sysctl.service is not the primary mechanism on this system,
+    # try to apply settings directly for the current session using sysctl --system.
 fi
 
-echo "Sysctl settings applied successfully."
+echo "Applying and verifying sysctl settings with 'sysctl --system' for current session..."
+# This command loads settings from all standard locations.
+# It's good for immediate effect and to verify syntax of config files.
+sudo sysctl --system
+if [ $? -ne 0 ]; then
+    echo "Error: 'sysctl --system' failed. This indicates an issue with the sysctl configuration files (e.g., syntax error in $SYSCTL_CONFIG_FILE)."
+    exit 1
+fi
+
+echo "Sysctl settings applied. Check 'sudo sysctl -a | grep log_martians' and verify after reboot."
 echo "Note: Some settings may require a reboot to take full effect."
