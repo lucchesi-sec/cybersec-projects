@@ -8,21 +8,21 @@ This project provides a script to safely rotate SSH keypairs for remote Linux se
 - Follow best practices for credential hygiene.
 - Demonstrate real-world security automation.
 
-## How It Works
-1. Automatically detects the fingerprint of your current local `id_rsa.pub`.
-2. Generates a new SSH keypair (`id_rsa_rotated_YYYY-MM-DD_HH-MM-SS`).
-3. Adds the new public key to the remote server’s `authorized_keys`.
-4. Verifies login using the new key to prevent lockout.
-5. Backs up the current `authorized_keys` to `authorized_keys.backup-YYYYMMDD` on the remote server.
-6. Matches the old key’s fingerprint against the entries in `authorized_keys`.
-7. Prompts before removing the old key — only deletes if confirmed.
+## Prerequisites
 
-## Usage
-```bash
-chmod +x rotate-ssh-key.sh
-./rotate-ssh-key.sh <remote_user> <remote_host>
-```
+**Local Machine (where this script is run):**
+-   Bash shell environment.
+-   Standard SSH client tools: `ssh`, `ssh-keygen`.
+-   `ssh-copy-id` utility: This script uses `ssh-copy-id` to transfer the new public key. Ensure it's installed on your local machine.
+-   Permissions to create files and directories within your local `~/.ssh/` directory.
 
+**Remote Linux Server:**
+-   A running SSH server.
+-   The specified `<remote_user>` must exist.
+-   The `<remote_user>` must have a `~/.ssh` directory on the remote server, and permissions to write to their own `~/.ssh/authorized_keys` file.
+-   Network connectivity from the local machine to the remote server on the SSH port.
+
+## iyD
 Example:
 ```bash
 ./rotate-ssh-key.sh enzo 192.168.64.2
@@ -31,10 +31,32 @@ Example:
 ### Log Level Configuration
 You can set the log level using the `SSH_KEY_ROTATION_LOG_LEVEL` environment variable:
 
-```bash
-# Available log levels: DEBUG, INFO, SUCCESS, WARNING, ERROR
-SSH_KEY_ROTATION_LOG_LEVEL=DEBUG ./rotate-ssh-key.sh enzo 192.168.64.2
+```Usg
+```b 
+lhmoel+xGFoO,SS-N,h-.sh
+./OE-- n-ssh-4.2.s<_u><emo_ht>
 ```
+
+Exmp:
+```ba
+./ot-ssh-sez192.168.64.2
+```
+
+###LgLlCnfigra
+Youcantloglvlust`SSH_KEY_ROTATION_LOG_LEVEL`nvionmnvabl:
+
+```bah
+#Avalabloglevl: DEBUG, INFO,SUCCESS,WARNING ERROR
+SSH_KEY_ROTATION_LOG_LEVEL=DEBUGrote-ss-hz192.168.642
+```
+
+## 🛡️ Safety Features
+This script includes several important safety measures to minimize risks during key rotation:
+-   **Login Verification:** Crucially, after adding the new public key to the remote server, the script performs an SSH login test using the new private key. The script will not proceed to remove old keys unless this login test is successful.
+-   **Authorized Keys Backup:** Before making any changes to the remote `~/.ssh/authorized_keys` file, a timestamped backup (e.g., `~/.ssh/authorized_keys.backup-YYYYMMDD_HHMMSS`) is created on the remote server.
+-   **Old Key Identification:** The script attempts to identify your current local `id_rsa.pub` key's fingerprint to help locate it in the remote `authorized_keys` file.
+-   **User Confirmation for Deletion:** You will be explicitly prompted before any old key is removed from the remote server's `authorized_keys` file. Deletion only occurs if you confirm.
+-   **Detailed Logging:** The script provides structured logs (configurable via the `SSH_KEY_ROTATION_LOG_LEVEL` environment variable) that record each step of the process, aiding in auditing and troubleshooting.
 
 ## Example Output (Log Excerpt)
 ```
@@ -62,6 +84,7 @@ Do you want to remove the old key? [y/N]:
 - Requires SSH access to the remote host with permissions to write to the `~/.ssh/authorized_keys` file for the specified remote user.
 - The script currently handles a single remote host. Multi-host support could be added in future versions.
 - Enhanced with structured logging with multiple log levels (DEBUG, INFO, SUCCESS, WARNING, ERROR).
+- Newly generated local SSH keypairs are stored in a subdirectory named `rotated-keys` within your local `~/.ssh/` directory (e.g., `~/.ssh/rotated-keys/id_rsa_rotated_YYYY-MM-DD_HH-MM-SS`).
 
 ## Log Levels
 The script supports different log levels for better visibility and troubleshooting:
