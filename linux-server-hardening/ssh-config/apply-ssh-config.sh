@@ -44,6 +44,9 @@ set_ssh_config "MaxAuthTries" "3" "$SSH_CONFIG_FILE"
 # Ensure some common defaults that might be missing or misconfigured
 set_ssh_config "PubkeyAuthentication" "yes" "$SSH_CONFIG_FILE" # Ensure pubkey auth is enabled
 
+# Set the SSH Banner
+set_ssh_config "Banner" "/etc/issue.net" "$SSH_CONFIG_FILE"
+
 # --- Optional Recommended Settings ---
 # Uncomment and modify as needed
 

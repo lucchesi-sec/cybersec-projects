@@ -9,7 +9,7 @@ YELLOW="\e[33m"
 RESET="\e[0m"
 
 PASS_COUNT=0
-TOTAL_CHECKS=24 # Updated count: SSH(4), UFW(1), F2B(2), UU(1), PWPolicy(1), Auditd(4), Banner(1), Sysctl(10)
+TOTAL_CHECKS=28 # Updated count: SSH(5), UFW(4), F2B(2), UU(1), PWPolicy(1), Auditd(4), Banner(1), Sysctl(10)
 
 print_result() {
   if [ "$1" -eq 0 ]; then
@@ -48,10 +48,25 @@ else
   print_result 1 "LoginGraceTime is NOT set or > 60 (Current: '$LOGIN_GRACE_TIME')"
 fi
 
+grep -qi "^\\s*Banner\\s+/etc/issue.net" /etc/ssh/sshd_config
+print_result $? "SSH Banner is set to /etc/issue.net"
+
 # 2. Check UFW firewall status
 echo -e "\n[FIREWALL STATUS]"
-sudo ufw status | grep -q "Status: active"
+UFW_STATUS_VERBOSE=$(sudo ufw status verbose)
+echo "$UFW_STATUS_VERBOSE" | grep -q "Status: active"
 print_result $? "UFW firewall is active"
+
+echo "$UFW_STATUS_VERBOSE" | grep -q "Default: deny (incoming), allow (outgoing), disabled (routed)"
+print_result $? "UFW default policy is deny incoming, allow outgoing"
+
+# Check for a rule allowing OpenSSH (can be by name, port 22, or service 'ssh')
+# This regex tries to catch common ways to allow SSH.
+if echo "$UFW_STATUS_VERBOSE" | grep -qE "(OpenSSH|22/tcp|ssh)\s+(ALLOW IN|ALLOW)\s+Anywhere"; then
+    print_result 0 "UFW rule allows SSH"
+else
+    print_result 1 "UFW rule to allow SSH not found or not standard"
+fi
 
 # 3. Check Fail2Ban status and config
 echo -e "\n[FAIL2BAN STATUS]"
