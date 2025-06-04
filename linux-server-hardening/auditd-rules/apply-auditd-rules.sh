@@ -76,9 +76,13 @@ RULES_LOADED_SUCCESSFULLY=0
 
 # 0. Delete existing rules first for a clean slate
 echo "Running 'auditctl -D' to delete existing rules..."
-sudo auditctl -D
-if [ $? -ne 0 ]; then
-    echo "Warning: 'auditctl -D' failed. Existing rules might interfere. Proceeding anyway..."
+# Temporarily allow this command to fail without exiting the script due to 'set -e'
+# as an immutable configuration (-e 2) would cause -D to fail.
+if sudo auditctl -D; then
+    echo "auditctl -D successful or no rules to delete."
+else
+    echo "Warning: 'auditctl -D' failed. This can happen if rules are immutable (-e 2)."
+    echo "Proceeding with attempt to load new rules..."
 fi
 
 # 1. Attempt direct load first (often gives better immediate feedback)
