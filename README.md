@@ -15,6 +15,8 @@ The goal is to build a portfolio of work that reflects both technical ability an
 
 ---
 
+Each project is self-contained within its respective directory. For detailed information, setup instructions, and usage guidelines, please refer to the `README.md` file located inside each project's folder.
+
 ## 📂 Projects
 
 ### ✅ [Linux Server Hardening Lab](./linux-server-hardening/)
@@ -103,6 +105,25 @@ Includes 13 initial scripts with comment-based help and clean console output.
 
 ---
 
+## 🛠️ Key Skills & Technologies Showcase
+This repository demonstrates hands-on experience with a range of cybersecurity domains and tools, including:
+
+-   **Operating Systems:** Linux (Ubuntu) Hardening, Windows System Administration
+-   **Scripting & Automation:** Bash, Python, PowerShell
+-   **Cloud Security:** AWS (S3 bucket security)
+-   **Security Tools & Concepts:**
+    -   Firewalls (UFW), Intrusion Detection/Prevention (Fail2ban)
+    -   SSH Security (Key-based authentication, configuration hardening, key rotation)
+    -   Password Security Analysis (NIST/OWASP guidelines, entropy, pattern detection)
+    -   Static Malware Analysis (PE headers, YARA, string analysis)
+    -   Web Application Security (ModSecurity WAF, OWASP CRS)
+    -   Audit Logging & Monitoring (`auditd`, ELK Stack integration concepts)
+    -   Vulnerability Assessment (manual and scripted checks)
+-   **Version Control:** Git, GitHub
+-   **Virtualization:** UTM (for lab environments)
+
+---
+
 ## 🎯 Purpose
 This repo serves as my personal cybersecurity lab space. The focus is on learning by doing — applying security concepts in a way that directly maps to real-world environments.
 
@@ -111,5 +132,5 @@ This repo serves as my personal cybersecurity lab space. The focus is on learnin
 
 ---
 
-## � Contact
+## 📧 Contact
 Reach out via [LinkedIn](https://www.linkedin.com/in/enzo-lucchesi) if you'd like to connect or discuss these projects.
