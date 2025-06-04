@@ -22,8 +22,8 @@ set_ssh_config() {
     local value="$2"
     local config_file="$3"
     echo "Setting $key to $value..."
-    # Remove existing occurrences of the key (commented or not)
-    sudo sed -i -e "/^#*\s*$key\s/d" "$config_file"
+    # Remove existing occurrences of the key (commented or not), more robustly
+    sudo sed -i -E -e "/^#*\s*$key\s+.*/d" "$config_file"
     # Add the new key-value pair
     echo "$key $value" | sudo tee -a "$config_file" > /dev/null
 }
