@@ -21,8 +21,8 @@ echo "Creating/Overwriting audit rules file: $TARGET_RULES_FILE"
 sudo bash -c "cat > $TARGET_RULES_FILE" << EOF
 # Auditd rules for hardening
 
-# Make the configuration immutable - important!
--e 1
+# Note: auditctl -R will enable auditing if rules are loaded.
+# The -e 2 rule at the end will make the configuration immutable.
 
 # Monitor changes to user/group files
 -w /etc/group -p wa -k identity
