@@ -33,6 +33,8 @@ All scripts are located in the `scripts/` subdirectory.
 | `Get-LowDiskSpace.ps1`               | Checks local fixed disks for low free space below a specified threshold.                 |
 | `Clear-TemporaryFiles.ps1`           | Identifies and optionally deletes files from common temporary locations (use with caution). |
 
+> **Note:** For detailed information on parameters, examples, and full descriptions for any script listed above, please use the `Get-Help` cmdlet from within the `scripts/` directory. For example: `Get-Help .\Get-SystemInfo.ps1 -Full`
+
 ## Usage
 
 1.  **Navigate to the Scripts Directory:**

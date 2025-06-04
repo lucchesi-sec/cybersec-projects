@@ -11,6 +11,18 @@ This project demonstrates how to implement a Web Application Firewall (WAF) usin
 - Helps comply with security regulations (PCI-DSS, etc.)
 - Can be implemented without modifying application code
 
+## Prerequisites for Implementation
+
+To follow the `install-guide.md` and set up this WAF demonstration, you will generally need:
+
+-   **A Linux Server:** A virtual machine or physical server running a common Linux distribution (e.g., Ubuntu, Debian, CentOS). The guide was tested on Ubuntu 22.04.
+-   **Web Server Software:** An installed and running web server. ModSecurity is commonly used with:
+    -   Apache (version 2.4.x recommended, as used in testing)
+    -   Nginx
+-   **Administrative Privileges:** Root or `sudo` access on the server to install packages and modify web server configurations.
+-   **Basic Linux & Web Server Knowledge:** Familiarity with using the Linux command line, text editors (like `nano` or `vim`), and basic concepts of web server configuration (e.g., virtual hosts, modules).
+-   **PHP (for testing):** If you intend to use the provided `tests/vulnerable-app.php`, you'll need PHP installed and configured with your web server.
+
 ## Project Components
 
 ### Documentation
