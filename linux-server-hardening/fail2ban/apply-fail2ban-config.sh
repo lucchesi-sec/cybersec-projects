@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e # Exit immediately if a command exits with a non-zero status.
 
 # Script to apply basic Fail2Ban configuration
 
@@ -37,24 +38,24 @@ fi
 
 echo "Applying SSH jail settings to $JAIL_LOCAL..."
 
-# Ensure [sshd] section exists and is enabled
-if grep -q "^\[sshd\]" "$JAIL_LOCAL"; then
-    echo "[sshd] section found."
-    # Check if 'enabled' line exists under [sshd]
-    if sudo awk '/^\[sshd\]/{f=1} f && /enabled/{print; f=0}' "$JAIL_LOCAL" | grep -q "enabled"; then
-         echo "'enabled' line found under [sshd]. Setting to true."
-         # Use sed to change 'enabled = false' or '# enabled = true/false' to 'enabled = true'
-         sudo sed -i '/^\[sshd\]/,/^\[/{s/^[# ]*enabled[[:space:]]*=.*$/enabled = true/}' "$JAIL_LOCAL"
-    else
-        echo "'enabled' line not found under [sshd]. Adding 'enabled = true'."
-        # Add 'enabled = true' after the [sshd] line
-        sudo sed -i '/^\[sshd\]/a enabled = true' "$JAIL_LOCAL"
-    fi
+# Ensure [sshd] section exists
+if ! grep -qE "^\[sshd\]" "$JAIL_LOCAL"; then
+    echo "[sshd] section not found. Adding it to the end of the file."
+    echo -e "\n[sshd]" | sudo tee -a "$JAIL_LOCAL" > /dev/null
 else
-    echo "[sshd] section not found. Adding [sshd] section with 'enabled = true'."
-    # Add the [sshd] section with enabled = true at the end of the file
-    echo -e "\n[sshd]\nenabled = true" | sudo tee -a "$JAIL_LOCAL" > /dev/null
+    echo "[sshd] section found."
 fi
+
+# Remove any existing 'enabled = ...' line under the [sshd] section.
+# This sed command operates on the range from '[sshd]' to the next section or EOF.
+# Inside this range, it deletes lines starting with 'enabled' (possibly commented).
+echo "Removing old 'enabled' setting under [sshd] if present."
+sudo sed -i '/^\[sshd\]/,/^\s*\[/{/^[#\s]*enabled\s*=/Id;}' "$JAIL_LOCAL"
+
+# Add 'enabled = true' right after the [sshd] line.
+# This ensures it's placed correctly within the section.
+echo "Setting 'enabled = true' under [sshd]."
+sudo sed -i '/^\[sshd\]/a enabled = true' "$JAIL_LOCAL"
 
 
 # Optional: Add/Modify other settings like bantime, findtime, maxretry

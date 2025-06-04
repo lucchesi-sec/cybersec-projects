@@ -15,9 +15,8 @@ A simple Python tool that scans AWS resources for common security misconfigurati
 ## Requirements
 
 - Python 3.7+
-- AWS account with programmatic access
-- Boto3 library
-- AWS CLI configured with appropriate permissions
+- AWS account with programmatic access (credentials configured via AWS CLI, environment variables, or IAM roles)
+- Boto3, Colorama, and Tabulate Python libraries (see `requirements.txt`)
 
 ## Setup
 
@@ -39,6 +38,9 @@ python s3_scanner.py --report detailed
 
 # Scan specific buckets
 python s3_scanner.py --buckets bucket1,bucket2
+
+# Save detailed report to a file
+python s3_scanner.py --report detailed --output detailed_report.txt
 ```
 
 ## Security Best Practices Demonstrated

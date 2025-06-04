@@ -9,7 +9,7 @@ YELLOW="\e[33m"
 RESET="\e[0m"
 
 PASS_COUNT=0
-TOTAL_CHECKS=22
+TOTAL_CHECKS=24 # Updated count: SSH(4), UFW(1), F2B(2), UU(1), PWPolicy(1), Auditd(4), Banner(1), Sysctl(10)
 
 print_result() {
   if [ "$1" -eq 0 ]; then
@@ -126,10 +126,10 @@ else
     echo -e "${YELLOW}⚠️  Cannot check loaded audit rules: auditctl command not found.${RESET}"
     # Increment pass count to avoid penalizing if auditctl isn't installed,
     # but maybe TOTAL_CHECKS should be dynamic? For now, just warn.
-    # Let's penalize - if auditd is active, auditctl should be there.
-     print_result 1 "Auditd rules immutable flag check skipped (auditctl not found)"
-     print_result 1 "Auditd 'identity' key check skipped (auditctl not found)"
-     print_result 1 "Auditd 'sshd' key check skipped (auditctl not found)"
+    # Penalize if auditctl isn't installed, as it's part of auditd package.
+     print_result 1 "Auditd rules immutable flag (-e 2) is NOT set (auditctl not found or error)"
+     print_result 1 "Auditd rules 'identity' key check failed (auditctl not found or error)"
+     print_result 1 "Auditd rules 'sshd' key check failed (auditctl not found or error)"
 
 fi
 

@@ -1,9 +1,18 @@
 #!/bin/bash
+set -e # Exit immediately if a command exits with a non-zero status.
 
 # Script to apply basic auditd rules
 
 RULES_DIR="/etc/audit/rules.d"
 TARGET_RULES_FILE="${RULES_DIR}/99-hardening-rules.rules" # Use a named file
+
+# Backup existing rules file if it exists
+if [ -f "$TARGET_RULES_FILE" ]; then
+    BACKUP_AUDIT_RULES_FILE="${TARGET_RULES_FILE}.bak_$(date +%Y%m%d_%H%M%S)"
+    echo "Backing up existing $TARGET_RULES_FILE to $BACKUP_AUDIT_RULES_FILE..."
+    sudo cp "$TARGET_RULES_FILE" "$BACKUP_AUDIT_RULES_FILE"
+    # No need to check $? here due to set -e
+fi
 
 echo "Creating/Overwriting audit rules file: $TARGET_RULES_FILE"
 

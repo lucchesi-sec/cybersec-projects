@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e # Exit immediately if a command exits with a non-zero status.
 # Basic script to install Elasticsearch on Debian/Ubuntu.
 # For RHEL/CentOS, use yum/dnf commands.
 

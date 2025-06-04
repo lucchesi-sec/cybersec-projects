@@ -28,19 +28,29 @@ def get_s3_client():
     """Create and return an S3 client using default credentials."""
     try:
         return boto3.client('s3')
+    except ClientError as e:
+        # Specific AWS client errors
+        error_message = f"AWS ClientError when trying to create S3 client: {e.response.get('Error', {}).get('Code', 'Unknown')} - {e.response.get('Error', {}).get('Message', 'No message')}"
+        print(f"{Fore.RED}{error_message}{Style.RESET_ALL}")
+        print("Make sure your AWS credentials are configured correctly and have S3 permissions.")
+        raise  # Re-raise to be caught by main
     except Exception as e:
-        print(f"{Fore.RED}Error connecting to AWS: {str(e)}{Style.RESET_ALL}")
+        # Other unexpected errors
+        print(f"{Fore.RED}Unexpected error connecting to AWS: {str(e)}{Style.RESET_ALL}")
         print("Make sure your AWS credentials are configured correctly.")
-        sys.exit(1)
+        raise # Re-raise to be caught by main
 
 def get_all_buckets(s3_client):
     """Get list of all S3 buckets in the account."""
     try:
         response = s3_client.list_buckets()
         return [bucket['Name'] for bucket in response['Buckets']]
+    except ClientError as e:
+        print(f"{Fore.RED}Error retrieving S3 buckets (ClientError): {e.response.get('Error', {}).get('Code', 'Unknown')} - {e.response.get('Error', {}).get('Message', 'No message')}{Style.RESET_ALL}")
+        return [] # Return empty list, main function will report no buckets scanned
     except Exception as e:
-        print(f"{Fore.RED}Error retrieving S3 buckets: {str(e)}{Style.RESET_ALL}")
-        return []
+        print(f"{Fore.RED}Unexpected error retrieving S3 buckets: {str(e)}{Style.RESET_ALL}")
+        return [] # Return empty list
 
 def check_bucket_public_access(s3_client, bucket_name):
     """Check if a bucket has any form of public access enabled."""
@@ -240,7 +250,11 @@ def main():
     print(f"{Fore.CYAN}AWS S3 Security Scanner{Style.RESET_ALL}")
     print("Checking for common security misconfigurations in S3 buckets...")
 
-    s3_client = get_s3_client()
+    try:
+        s3_client = get_s3_client()
+    except Exception:
+        # Error already printed by get_s3_client, just exit
+        sys.exit(1)
 
     # Determine which buckets to scan
     if args.buckets:

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e # Exit immediately if a command exits with a non-zero status.
 
 # Script to apply a standard warning banner to /etc/issue.net
 
