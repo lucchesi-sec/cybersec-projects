@@ -45,24 +45,35 @@ This repository now includes scripts to automate the installation, configuration
     cd cybersec-projects/linux-server-hardening
     ```
 2.  **Review Scripts:** **Carefully review `apply-all.sh` and the scripts it calls** to understand the changes they will make to your system. Pay special attention to `ssh-config/apply-ssh-config.sh` if you rely on password authentication.
-3.  **Ensure Key-Based SSH:** If you intend to use these scripts on a remote server, ensure you have **working SSH key-based authentication** set up *before* running the scripts, as password authentication will be disabled.
-4.  **Run the Applicator Script:**
+3.  **Customizing Hardening Settings:**
+    The scripts in subdirectories like `ssh-config/`, `fail2ban/`, `auditd-rules/`, and `password-policy/` often use template configuration files (e.g., `sshd_config` from this repository, `jail.local`, `audit.rules`) that are copied or used to modify system files.
+    **It is highly recommended to review these template files within the repository *before* running `apply-all.sh`.** You can modify them directly to suit your specific security policies or preferences. For example, you might want to adjust specific SSH ciphers, Fail2ban jail times, or password complexity parameters.
+4.  **Ensure Key-Based SSH:** If you intend to use these scripts on a remote server, ensure you have **working SSH key-based authentication** set up *before* running the scripts, as password authentication will be disabled.
+5.  **Run the Applicator Script:**
     ```bash
     chmod +x apply-all.sh
     sudo ./apply-all.sh
     ```
     Monitor the output for errors.
-5.  **Run the Check Script:**
+6.  **Run the Check Script:**
     ```bash
     chmod +x check-hardening.sh
     sudo ./check-hardening.sh
     ```
     Review the pass/fail results and the overall score.
-6.  **Reboot (Recommended):**
+7.  **Reboot (Recommended):**
     ```bash
     sudo reboot
     ```
     Run the check script again after reboot to ensure settings persisted.
+
+### Understanding `check-hardening.sh`
+The `check-hardening.sh` script performs a series of automated checks to verify that the hardening measures have been applied correctly. This typically includes:
+- Verifying that key services (like `sshd`, `ufw`, `fail2ban`, `auditd`) are active and enabled.
+- Checking critical configuration files (e.g., `/etc/ssh/sshd_config`, `/etc/fail2ban/jail.local`, `/etc/login.defs`, `/etc/pam.d/common-password`, `/etc/issue.net`, relevant `sysctl` values) for specific hardened settings.
+- Confirming UFW rules are in place (e.g., default deny, allow SSH).
+- Checking status of unattended upgrades.
+Each check contributes to an overall hardening score. Review the script's output for detailed pass/fail status on individual checks.
 
 **Prerequisites:**
 
@@ -71,6 +82,11 @@ This repository now includes scripts to automate the installation, configuration
 *   `git` (to clone the repository).
 
 **Warning:** These scripts modify critical system configurations. **Use them at your own risk.** Always back up important data before applying significant system changes. Testing in a non-production environment (like a VM) first is highly recommended.
+
+#### Configuration Backups
+Several of the `apply-*.sh` scripts take precautions when modifying system configurations. For instance, `ssh-config/apply-ssh-config.sh` creates a timestamped backup of your existing `/etc/ssh/sshd_config` (e.g., `/etc/ssh/sshd_config.bak_YYYYMMDD_HHMMSS`) before applying changes and attempts to restore it if validation fails.
+
+While some scripts include such safety measures, it's good practice to review individual `apply-*.sh` scripts for their specific backup mechanisms. For comprehensive safety, especially before running `apply-all.sh` for the first time on a critical system, consider manually backing up key configuration directories or ensuring your system is snapshotted if running in a VM.
 
 ---
 
