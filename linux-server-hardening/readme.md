@@ -3,7 +3,7 @@
 ## Overview
 This project provides a collection of scripts to help automate the hardening of a Linux server (tested on Ubuntu 22.04 ARM). It implements common security best practices, including locking down remote access, enforcing password policies, setting up basic intrusion detection, configuring audit logging, and applying secure kernel parameters.
 
-The original lab involved manually hardening a VM on a MacBook using UTM. These scripts aim to automate many of those steps.
+The original lab involved manually hardening a VM on a MacBook using UTM. These scripts aim to automate many of those steps and serve as a practical learning exercise in Linux system administration and security.
 
 ---
 
@@ -126,6 +126,7 @@ Basic installation scripts and integration guidance can be found in the [`elk-st
 - Reinforced understanding of basic Linux administration and compliance-focused hardening techniques.
 - The value of centralized logging (e.g., using ELK) for aggregating and analyzing security-relevant events (like auditd logs, firewall blocks, failed logins) from a hardened system.
 - **The process of automating hardening steps using shell scripting.**
+- Practical application of security concepts in a hands-on lab environment, transitioning from manual steps to automated solutions.
 
 ---
 
