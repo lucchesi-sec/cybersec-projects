@@ -156,9 +156,10 @@ fi
 echo -e "\n[AUTOMATIC UPDATES]"
 DESC_UNATTENDED="Unattended security upgrades (with auto-reboot) are enabled"
 IMPORTANCE_UNATTENDED="Automatic security updates protect against known vulnerabilities. Auto-reboot ensures kernel updates are applied but consider service impact."
-FIX_UNATTENDED="Install 'unattended-upgrades'. Set 'Unattended-Upgrade::Automatic-Reboot \"true\";' in /etc/apt/apt.conf.d/50unattended-upgrades for auto-reboot."
+FIX_UNATTENDED="Install 'unattended-upgrades'. Ensure 'Unattended-Upgrade::Automatic-Reboot \"true\";' is set in a configuration file under /etc/apt/apt.conf.d/ (e.g., by 'install-packages.sh')."
 # This specific check is for Automatic-Reboot "true". A more general check might be for APT::Periodic::Unattended-Upgrade "1";
-if grep -q "^\s*Unattended-Upgrade::Automatic-Reboot\s*\"true\";" /etc/apt/apt.conf.d/50unattended-upgrades 2>/dev/null; then
+# Check all files in /etc/apt/apt.conf.d/ for the setting.
+if grep -qrh "^\s*Unattended-Upgrade::Automatic-Reboot\s*\"true\";" /etc/apt/apt.conf.d/ 2>/dev/null; then
   print_result 0 "$DESC_UNATTENDED"
 else
   print_result 1 "$DESC_UNATTENDED" "$IMPORTANCE_UNATTENDED" "$FIX_UNATTENDED"
