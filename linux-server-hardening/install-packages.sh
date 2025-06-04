@@ -17,6 +17,8 @@ sudo apt install -y auditd
 
 echo "Installing unattended-upgrades (automatic updates)..."
 sudo apt install -y unattended-upgrades
+echo "Configuring unattended-upgrades to enable automatic updates..."
+sudo dpkg-reconfigure --priority=low unattended-upgrades
 
 echo "Installing libpam-pwquality (password quality checking)..."
 sudo apt install -y libpam-pwquality
