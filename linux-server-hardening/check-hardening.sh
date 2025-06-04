@@ -107,7 +107,7 @@ fi
 DESC_UFW_SSH_RULE="UFW rule allows SSH"
 IMPORTANCE_UFW_SSH_RULE="If SSH is used for remote administration, the firewall must explicitly allow incoming SSH connections to prevent lockout."
 FIX_UFW_SSH_RULE="Add a rule like 'sudo ufw allow OpenSSH' or 'sudo ufw allow 22/tcp'. 'install-packages.sh' should handle this. Check 'sudo ufw status verbose'."
-if echo "$UFW_STATUS_VERBOSE" | grep -qE "(OpenSSH|22/tcp|ssh)\s+(ALLOW IN|ALLOW)\s+Anywhere"; then
+if echo "$UFW_STATUS_VERBOSE" | grep -qE "(22\/tcp|OpenSSH|ssh)\s+(ALLOW IN|ALLOW)\s+"; then
     print_result 0 "$DESC_UFW_SSH_RULE"
 else
     print_result 1 "$DESC_UFW_SSH_RULE" "$IMPORTANCE_UFW_SSH_RULE" "$FIX_UFW_SSH_RULE"
