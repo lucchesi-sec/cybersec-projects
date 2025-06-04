@@ -10,14 +10,14 @@ The original lab involved manually hardening a VM on a MacBook using UTM. These 
 ## Hardening Areas Covered (Manual & Automated)
 The project addresses the following hardening areas, now largely automated by the provided scripts:
 
-*   **SSH Key-Only Login & Secure Configuration:** Disables password/root login, sets secure defaults.
-*   **Firewall (UFW):** Installs UFW (firewall configuration within scripts is minimal - requires manual setup or enhancement).
-*   **Intrusion Prevention (Fail2ban):** Installs and enables the SSH jail.
-*   **Automatic Security Updates:** Installs `unattended-upgrades`.
-*   **Password Policy Enforcement:** Checks system-wide policy (script does not currently *set* `pam_pwquality` rules).
-*   **Audit Logging (`auditd`):** Installs `auditd` and applies a baseline ruleset.
-*   **Legal Warning Banner:** Sets a standard warning banner in `/etc/issue.net`.
-*   **Kernel Parameters (`sysctl`):** Applies security-focused network, memory, and filesystem settings.
+-   **SSH Key-Only Login & Secure Configuration:** Disables password/root login, sets secure defaults.
+-   **Firewall (UFW):** Installs UFW (firewall configuration within scripts is minimal - requires manual setup or enhancement).
+-   **Intrusion Prevention (Fail2ban):** Installs and enables the SSH jail.
+-   **Automatic Security Updates:** Installs `unattended-upgrades`.
+-   **Password Policy Enforcement:** Checks system-wide policy (script does not currently *set* `pam_pwquality` rules).
+-   **Audit Logging (`auditd`):** Installs `auditd` and applies a baseline ruleset.
+-   **Legal Warning Banner:** Sets a standard warning banner in `/etc/issue.net`.
+-   **Kernel Parameters (`sysctl`):** Applies security-focused network, memory, and filesystem settings.
 
 ---
 
