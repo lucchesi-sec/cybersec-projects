@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e -u -o pipefail
+
 # SSH Key Rotation Script (Safe Version)
 # Usage: ./rotate-ssh-key.sh <remote_user> <remote_host>
 
@@ -38,16 +40,72 @@ log() {
 # Error function with logging and exit
 error_exit() {
     log $LOG_LEVEL_ERROR "$1"
+    # set -e handles exit on error for most commands, but explicit exit here is fine.
     exit 1
 }
 
-REMOTE_USER=$1
-REMOTE_HOST=$2
-OLD_KEY_PATH="$HOME/.ssh/id_rsa.pub"
+# Function to find and offer removal of a specific key fingerprint on the remote server
+# Takes two arguments:
+# $1: Fingerprint of the key to find and remove
+# $2: Description of the key (e.g., "primary old key" or "key from old-keys.txt: path/to/key.pub")
+find_and_remove_key_on_remote() {
+    local fingerprint_to_find="$1"
+    local key_description="$2"
+
+    log $LOG_LEVEL_INFO "Checking for $key_description (fingerprint: $fingerprint_to_find) in remote authorized_keys..."
+    
+    # Note: This method of reading line-by-line and piping to 'ssh-keygen -lf /dev/stdin'
+    # works well for standard authorized_key entries. For lines with complex prefixed options
+    # (e.g., from="...", command="..."), its accuracy might vary.
+    # A more robust solution would involve parsing each line to extract only the key-type and key-blob.
+    local remote_key_line_found
+    remote_key_line_found=$(ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "
+      while read line; do
+        # Ensure 'line' is not empty before piping
+        if [[ -n \"\$line\" ]]; then
+            echo \"\$line\" | ssh-keygen -lf /dev/stdin 2>/dev/null | grep -qF \"$fingerprint_to_find\" && echo \"FOUND:\$line\" && break
+        fi
+      done < ~/.ssh/authorized_keys
+    ")
+
+    if [[ "$remote_key_line_found" == *"FOUND:"* ]]; then
+        local actual_key_line="${remote_key_line_found#FOUND:}" # Remove "FOUND:" prefix
+        log $LOG_LEVEL_WARNING "$key_description (fingerprint: $fingerprint_to_find) detected in remote authorized_keys: $actual_key_line"
+        
+        read -p "Do you want to remove this key ($key_description)? [y/N]: " CONFIRM_REMOVE
+        if [[ "$CONFIRM_REMOVE" =~ ^[Yy]$ ]]; then
+            log $LOG_LEVEL_INFO "Attempting to remove $key_description line from remote authorized_keys..."
+            
+            local remote_command_remove
+            remote_command_remove="grep -vF -- \"${actual_key_line}\" ~/.ssh/authorized_keys > ~/.ssh/authorized_keys.new && mv ~/.ssh/authorized_keys.new ~/.ssh/authorized_keys"
+            
+            log $LOG_LEVEL_DEBUG "Remote command for key removal: $remote_command_remove"
+
+            if ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "$remote_command_remove"; then
+                log $LOG_LEVEL_SUCCESS "$key_description removed successfully from remote authorized_keys."
+            else
+                log $LOG_LEVEL_ERROR "Failed to remove $key_description from remote authorized_keys. Check backup: $BACKUP_FILE"
+            fi
+        else
+            log $LOG_LEVEL_INFO "$key_description not removed."
+        fi
+    else
+        log $LOG_LEVEL_INFO "$key_description (fingerprint: $fingerprint_to_find) not found in remote authorized_keys."
+    fi
+}
+
+REMOTE_USER="${1:-}" # Default to empty if not set, check later
+REMOTE_HOST="${2:-}" # Default to empty if not set, check later
+# Optional third argument for the old public key path
+SPECIFIED_OLD_KEY_PATH="${3:-}" 
+
+OLD_KEY_PATH="" # Initialize
 KEY_DIR="$HOME/.ssh/rotated-keys"
 NEW_KEY_NAME="id_rsa_rotated_$(date +%Y-%m-%d_%H-%M-%S)"
 NEW_KEY_PATH="$KEY_DIR/$NEW_KEY_NAME"
-LOG_FILE="example-output/rotation-log.txt"
+LOG_FILE="example-output/rotation-log.txt" # Consider making this path more robust or configurable
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )" # Get script's own directory
+OLD_KEYS_FILE_PATH="${SCRIPT_DIR}/old-keys.txt" # Assumes old-keys.txt is in the same dir as the script
 BACKUP_DATE=$(date +%Y-%m-%d_%H-%M-%S)
 
 # Set log level from environment variable if present
@@ -63,7 +121,16 @@ if [[ -n "$SSH_KEY_ROTATION_LOG_LEVEL" ]]; then
 fi
 
 if [[ -z "$REMOTE_USER" || -z "$REMOTE_HOST" ]]; then
-    error_exit "Usage: $0 <remote_user> <remote_host>"
+    error_exit "Usage: $0 <remote_user> <remote_host> [path_to_old_public_key]"
+fi
+
+# Determine and verify old key path
+if [[ -n "$SPECIFIED_OLD_KEY_PATH" ]]; then
+    OLD_KEY_PATH="$SPECIFIED_OLD_KEY_PATH"
+    log $LOG_LEVEL_INFO "Using specified old public key path: $OLD_KEY_PATH"
+else
+    OLD_KEY_PATH="$HOME/.ssh/id_rsa.pub"
+    log $LOG_LEVEL_INFO "No old public key path specified, defaulting to: $OLD_KEY_PATH"
 fi
 
 # Verify old key exists
@@ -105,6 +172,10 @@ ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "cp ~/.ssh/authorized_key
     log $LOG_LEVEL_WARNING "Failed to backup authorized_keys file"
 
 # Find matching fingerprint remotely
+# Note: This method of reading line-by-line and piping to 'ssh-keygen -lf /dev/stdin'
+# works well for standard authorized_key entries. For lines with complex prefixed options
+# (e.g., from="...", command="..."), its accuracy might vary.
+# A more robust solution would involve parsing each line to extract only the key-type and key-blob.
 log $LOG_LEVEL_INFO "Checking for old key in authorized_keys..."
 OLD_KEY_FOUND=$(ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "
   while read line; do
@@ -113,14 +184,30 @@ OLD_KEY_FOUND=$(ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "
 ")
 
 if [[ "$OLD_KEY_FOUND" == *"FOUND:"* ]]; then
-    log $LOG_LEVEL_WARNING "Old key detected in authorized_keys."
-    read -p "Do you want to remove the old key? [y/N]: " CONFIRM
+    actual_old_key_line="${OLD_KEY_FOUND#FOUND:}" # Remove "FOUND:" prefix
+    log $LOG_LEVEL_WARNING "Old key detected in authorized_keys: $actual_old_key_line"
+    
+    read -p "Do you want to remove the old key (see log for exact key line)? [y/N]: " CONFIRM
     if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
-        log $LOG_LEVEL_INFO "Removing old key..."
-        ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "
-          grep -v '$OLD_FINGERPRINT' ~/.ssh/authorized_keys > ~/.ssh/authorized_keys.new && mv ~/.ssh/authorized_keys.new ~/.ssh/authorized_keys" || \
-          log $LOG_LEVEL_ERROR "Failed to remove old key"
-        log $LOG_LEVEL_SUCCESS "Old key removed"
+        log $LOG_LEVEL_INFO "Attempting to remove old key line from remote authorized_keys..."
+        
+        # Prepare the command to be executed remotely.
+        # Using printf to safely quote the line for the remote shell.
+        # The remote command will look like: grep -vF "ssh-rsa AAAA..." ~/.ssh/authorized_keys > ...
+        # We need to escape quotes carefully for the ssh command.
+        # Safest way is often to pass the string as an argument to a remote shell command or use a heredoc for complex cases.
+        # For a single line, careful quoting can work.
+        # Let's try with direct quoting, ensuring $actual_old_key_line is expanded locally.
+        # The outer double quotes are for the local ssh command, inner escaped quotes for remote grep.
+        remote_command="grep -vF -- \"${actual_old_key_line}\" ~/.ssh/authorized_keys > ~/.ssh/authorized_keys.new && mv ~/.ssh/authorized_keys.new ~/.ssh/authorized_keys"
+        
+        log $LOG_LEVEL_DEBUG "Remote command for key removal: $remote_command"
+
+        if ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "$remote_command"; then
+            log $LOG_LEVEL_SUCCESS "Old key removed successfully from remote authorized_keys."
+        else
+            log $LOG_LEVEL_ERROR "Failed to remove old key from remote authorized_keys. Check backup: $BACKUP_FILE"
+        fi
     else
         log $LOG_LEVEL_INFO "Old key not removed. Exiting safely."
     fi

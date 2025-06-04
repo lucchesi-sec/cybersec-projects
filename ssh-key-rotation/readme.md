@@ -59,7 +59,7 @@ Do you want to remove the old key? [y/N]:
 
 ## Notes
 - Tested on Ubuntu 22.04.
-- Requires SSH access and password-based `sudo` on the remote host.
+- Requires SSH access to the remote host with permissions to write to the `~/.ssh/authorized_keys` file for the specified remote user.
 - The script currently handles a single remote host. Multi-host support could be added in future versions.
 - Enhanced with structured logging with multiple log levels (DEBUG, INFO, SUCCESS, WARNING, ERROR).
 
