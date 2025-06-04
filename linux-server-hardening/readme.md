@@ -11,9 +11,9 @@ The original lab involved manually hardening a VM on a MacBook using UTM. These 
 The project addresses the following hardening areas, now largely automated by the provided scripts:
 
 -   **SSH Key-Only Login & Secure Configuration:** Disables password/root login, sets secure defaults.
--   **Firewall (UFW):** Installs UFW (firewall configuration within scripts is minimal - requires manual setup or enhancement).
+-   **Firewall (UFW):** Installs UFW, sets default deny incoming/allow outgoing policies, allows SSH (OpenSSH & port 22/tcp), and enables the firewall.
 -   **Intrusion Prevention (Fail2ban):** Installs and enables the SSH jail.
--   **Automatic Security Updates:** Installs `unattended-upgrades`.
+-   **Automatic Security Updates:** Installs `unattended-upgrades` and configures it to automatically apply security updates, including automatic reboots if required by an update.
 -   **Password Policy Enforcement:** Installs `libpam-pwquality` and configures password complexity rules in `/etc/pam.d/common-password` and password aging policies in `/etc/login.defs`.
 -   **Audit Logging (`auditd`):** Installs `auditd` and applies a baseline ruleset.
 -   **Legal Warning Banner:** Sets a standard warning banner in `/etc/issue.net`.
