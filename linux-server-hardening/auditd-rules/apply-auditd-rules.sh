@@ -4,21 +4,20 @@ set -e # Exit immediately if a command exits with a non-zero status.
 # Script to apply basic auditd rules
 
 RULES_DIR="/etc/audit/rules.d"
-TARGET_RULES_FILE="${RULES_DIR}/99-hardening-rules.rules" # Use a named file
+TARGET_RULES_FILE_SRC="${RULES_DIR}/99-hardening-rules.rules" # Source rules file name
+COMPILED_RULES_FILE="/etc/audit/audit.rules" # Standard compiled rules file
 
-# Backup existing rules file if it exists
-if [ -f "$TARGET_RULES_FILE" ]; then
-    BACKUP_AUDIT_RULES_FILE="${TARGET_RULES_FILE}.bak_$(date +%Y%m%d_%H%M%S)"
-    echo "Backing up existing $TARGET_RULES_FILE to $BACKUP_AUDIT_RULES_FILE..."
-    sudo cp "$TARGET_RULES_FILE" "$BACKUP_AUDIT_RULES_FILE"
-    # No need to check $? here due to set -e
+# Backup existing source rules file if it exists
+if [ -f "$TARGET_RULES_FILE_SRC" ]; then
+    BACKUP_AUDIT_RULES_FILE="${TARGET_RULES_FILE_SRC}.bak_$(date +%Y%m%d_%H%M%S)"
+    echo "Backing up existing $TARGET_RULES_FILE_SRC to $BACKUP_AUDIT_RULES_FILE..."
+    sudo cp "$TARGET_RULES_FILE_SRC" "$BACKUP_AUDIT_RULES_FILE"
 fi
 
-echo "Creating/Overwriting audit rules file: $TARGET_RULES_FILE"
+echo "Creating/Overwriting audit rules source file: $TARGET_RULES_FILE_SRC"
 
 # Create the rules file content
-# Using cat with EOF allows for easy multi-line rule definition
-sudo bash -c "cat > $TARGET_RULES_FILE" << EOF
+sudo bash -c "cat > $TARGET_RULES_FILE_SRC" << EOF
 # Auditd rules for hardening
 
 # Note: auditctl -R will enable auditing if rules are loaded.
@@ -64,97 +63,106 @@ sudo bash -c "cat > $TARGET_RULES_FILE" << EOF
 EOF
 
 if [ $? -ne 0 ]; then
-    echo "Error: Failed to write audit rules to $TARGET_RULES_FILE. Aborting."
+    echo "Error: Failed to write audit rules to $TARGET_RULES_FILE_SRC. Aborting."
     exit 1
 fi
+echo "Audit rules source file written to $TARGET_RULES_FILE_SRC."
 
-echo "Audit rules written to $TARGET_RULES_FILE."
-echo "Attempting to delete existing rules and load new ones..."
+echo "Attempting to apply auditd rules with aggressive reset..."
 
-# Flag to track if rules loaded successfully
-RULES_LOADED_SUCCESSFULLY=0
+# --- Aggressive Reset of Auditd State ---
+echo "Stopping auditd service..."
+sudo systemctl stop auditd || echo "Warning: auditd stop failed, it might not have been running."
 
-# 0. Delete existing rules first for a clean slate
-echo "Running 'auditctl -D' to delete existing rules..."
-# Temporarily allow this command to fail without exiting the script due to 'set -e'
-# as an immutable configuration (-e 2) would cause -D to fail.
+echo "Removing old compiled rules file $COMPILED_RULES_FILE to prevent reload of potentially immutable config..."
+sudo rm -f "$COMPILED_RULES_FILE"
+
+echo "Running 'auditctl -D' to delete any loaded kernel rules..."
 if sudo auditctl -D; then
     echo "auditctl -D successful or no rules to delete."
 else
-    echo "Warning: 'auditctl -D' failed. This can happen if rules are immutable (-e 2)."
+    echo "Warning: 'auditctl -D' failed. This can happen if rules were immutable and kernel retained the flag."
     echo "Proceeding with attempt to load new rules..."
 fi
+# --- End Aggressive Reset ---
 
-# 1. Attempt direct load first (often gives better immediate feedback)
-echo "Running 'auditctl -R $TARGET_RULES_FILE'..."
-# Temporarily disable 'set -e' to capture detailed error from auditctl -R
+RULES_LOADED_SUCCESSFULLY=0
+
+# 1. Syntax check rules from source file
+echo "Performing syntax check by attempting to load rules from $TARGET_RULES_FILE_SRC..."
 set +e
-AUDITCTL_R_OUTPUT=$(sudo auditctl -R "$TARGET_RULES_FILE" 2>&1)
-AUDITCTL_R_EXIT_CODE=$?
+AUDITCTL_SYNTAX_CHECK_OUTPUT=$(sudo auditctl -R "$TARGET_RULES_FILE_SRC" 2>&1)
+AUDITCTL_SYNTAX_CHECK_EXIT_CODE=$?
 set -e
 
-if [ "$AUDITCTL_R_EXIT_CODE" -eq 0 ]; then
-    echo "auditctl -R successful."
-    RULES_LOADED_SUCCESSFULLY=1
+if [ "$AUDITCTL_SYNTAX_CHECK_EXIT_CODE" -eq 0 ]; then
+    echo "Syntax check (auditctl -R $TARGET_RULES_FILE_SRC) successful."
+    # Rules are now in the kernel, but auditd is stopped.
+    # We still need augenrules for persistence and for auditd to use them on start.
 else
-    echo "ERROR: 'auditctl -R $TARGET_RULES_FILE' failed with exit code $AUDITCTL_R_EXIT_CODE."
+    echo "ERROR: Syntax check (auditctl -R $TARGET_RULES_FILE_SRC) failed with exit code $AUDITCTL_SYNTAX_CHECK_EXIT_CODE."
     echo "auditctl output:"
-    echo "$AUDITCTL_R_OUTPUT"
-    # The script will exit here due to 'set -e' being re-enabled and the main script's error handling
-    # if RULES_LOADED_SUCCESSFULLY remains 0 and this script returns non-zero.
-    # To ensure this script itself signals failure to apply-all.sh:
-    exit 1 
+    echo "$AUDITCTL_SYNTAX_CHECK_OUTPUT"
+    echo "Aborting due to rule syntax errors."
+    # Attempt to start auditd so system is not without it, though it may have no/default rules
+    sudo systemctl start auditd || echo "Warning: Failed to start auditd after syntax check failure."
+    exit 1
 fi
 
-# 2. Attempt to make rules persistent using augenrules (if available)
+# 2. Compile rules using augenrules for persistence
 if command -v augenrules &> /dev/null; then
-    echo "Running 'augenrules --load'..."
-    sudo augenrules --load
-    if [ $? -eq 0 ]; then
-        echo "augenrules --load successful."
-        RULES_LOADED_SUCCESSFULLY=1
-    else
-        echo "Warning: First attempt of 'augenrules --load' failed. Attempting auditd restart and retry."
-        sudo systemctl restart auditd
-        sleep 2 # Give service a moment to restart
-        echo "Retrying 'augenrules --load' after auditd restart..."
-        sudo augenrules --load
-        if [ $? -eq 0 ]; then
-            echo "augenrules --load successful after auditd restart."
+    echo "Running 'augenrules' to compile rules into $COMPILED_RULES_FILE..."
+    if sudo augenrules; then
+        echo "augenrules compilation successful."
+        # Verify the compiled file can be loaded (redundant if previous -R passed, but good check)
+        echo "Verifying compiled rules file $COMPILED_RULES_FILE with auditctl -R..."
+        set +e
+        AUDITCTL_COMPILED_LOAD_OUTPUT=$(sudo auditctl -R "$COMPILED_RULES_FILE" 2>&1)
+        AUDITCTL_COMPILED_LOAD_EXIT_CODE=$?
+        set -e
+        if [ "$AUDITCTL_COMPILED_LOAD_EXIT_CODE" -eq 0 ]; then
+            echo "Successfully loaded/verified compiled rules from $COMPILED_RULES_FILE."
             RULES_LOADED_SUCCESSFULLY=1
         else
-            echo "Warning: 'augenrules --load' still failed after auditd restart. Rules might not persist."
-            # RULES_LOADED_SUCCESSFULLY remains 0 or based on auditctl -R
+            echo "ERROR: Failed to load/verify compiled rules from $COMPILED_RULES_FILE with auditctl. Exit code: $AUDITCTL_COMPILED_LOAD_EXIT_CODE."
+            echo "auditctl output:"
+            echo "$AUDITCTL_COMPILED_LOAD_OUTPUT"
+            # RULES_LOADED_SUCCESSFULLY remains 0
         fi
+    else
+        echo "ERROR: 'augenrules' compilation failed. Rules will not be persistent."
+        # RULES_LOADED_SUCCESSFULLY remains 0
     fi
 else
     echo "Warning: 'augenrules' command not found. Rules may not persist across reboots."
-    # If auditctl -R was successful, we can still consider rules loaded for the current session.
-    # RULES_LOADED_SUCCESSFULLY would be 1 from the auditctl -R check.
-fi
-
-# 3. If direct load or augenrules failed, try restarting the service as a last resort
-# This section might be redundant now if augenrules retry logic includes a restart,
-# but keeping it as a final fallback if RULES_LOADED_SUCCESSFULLY is still 0.
-if [ "$RULES_LOADED_SUCCESSFULLY" -eq 0 ]; then
-    echo "Warning: Rule loading via auditctl/augenrules failed or was incomplete. Attempting service restart..."
-    sudo systemctl restart auditd
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to restart auditd service after rule loading issues."
-        exit 1
-    else
-        echo "auditd service restarted. Check 'sudo auditctl -l' manually to verify rules."
-        # We restarted, but can't be certain rules are loaded without checking again
-        RULES_LOADED_SUCCESSFULLY=1 # Assume restart might have fixed it, but warn user
+    # If syntax check passed, rules are in kernel for current session.
+    if [ "$AUDITCTL_SYNTAX_CHECK_EXIT_CODE" -eq 0 ]; then
+        RULES_LOADED_SUCCESSFULLY=1 
+        echo "Rules loaded for current session via auditctl -R $TARGET_RULES_FILE_SRC."
     fi
 fi
 
+# 3. Start auditd service
+echo "Attempting to start auditd service..."
+if sudo systemctl start auditd; then
+    echo "auditd service started successfully."
+    if [ "$RULES_LOADED_SUCCESSFULLY" -eq 1 ]; then
+        echo "Auditd rules should be active."
+        echo "Final check of loaded rules with 'auditctl -l':"
+        sleep 1 # Give a moment
+        sudo auditctl -l
+    else
+        echo "Warning: auditd started, but rule loading encountered issues. Check 'auditctl -l'."
+    fi
+else
+    echo "ERROR: Failed to start auditd service."
+    RULES_LOADED_SUCCESSFULLY=0 # Mark as failed if service doesn't start
+fi
 
 if [ "$RULES_LOADED_SUCCESSFULLY" -eq 1 ]; then
-    echo "Auditd rules applied/loaded."
-    echo "Verify loaded rules manually using 'sudo auditctl -l' if needed."
+    echo "Auditd rules applied and auditd service started successfully."
 else
-    echo "Error: Failed to load auditd rules through all methods. Please investigate manually."
+    echo "Error: Auditd rule application failed. Please review messages above."
     exit 1
 fi
 
