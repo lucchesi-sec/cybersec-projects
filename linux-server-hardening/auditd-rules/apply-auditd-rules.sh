@@ -87,13 +87,23 @@ fi
 
 # 1. Attempt direct load first (often gives better immediate feedback)
 echo "Running 'auditctl -R $TARGET_RULES_FILE'..."
-sudo auditctl -R "$TARGET_RULES_FILE"
-if [ $? -eq 0 ]; then
+# Temporarily disable 'set -e' to capture detailed error from auditctl -R
+set +e
+AUDITCTL_R_OUTPUT=$(sudo auditctl -R "$TARGET_RULES_FILE" 2>&1)
+AUDITCTL_R_EXIT_CODE=$?
+set -e
+
+if [ "$AUDITCTL_R_EXIT_CODE" -eq 0 ]; then
     echo "auditctl -R successful."
     RULES_LOADED_SUCCESSFULLY=1
 else
-    echo "Warning: 'auditctl -R $TARGET_RULES_FILE' failed. Check rule syntax or auditd status."
-    # Don't set the success flag
+    echo "ERROR: 'auditctl -R $TARGET_RULES_FILE' failed with exit code $AUDITCTL_R_EXIT_CODE."
+    echo "auditctl output:"
+    echo "$AUDITCTL_R_OUTPUT"
+    # The script will exit here due to 'set -e' being re-enabled and the main script's error handling
+    # if RULES_LOADED_SUCCESSFULLY remains 0 and this script returns non-zero.
+    # To ensure this script itself signals failure to apply-all.sh:
+    exit 1 
 fi
 
 # 2. Attempt to make rules persistent using augenrules (if available)
