@@ -30,6 +30,7 @@ sudo ufw default allow outgoing
 
 # Allow SSH connections (OpenSSH is the service name)
 sudo ufw allow OpenSSH
+sudo ufw allow 22/tcp # Explicitly allow TCP port 22 as a fallback
 
 # Enable UFW - use --force to avoid interactive prompt in script
 sudo ufw --force enable
