@@ -18,6 +18,20 @@ A simple Python tool that scans AWS resources for common security misconfigurati
 - AWS account with programmatic access (credentials configured via AWS CLI, environment variables, or IAM roles)
 - Boto3, Colorama, and Tabulate Python libraries (see `requirements.txt`)
 
+### Required IAM Permissions
+To run this scanner effectively, the AWS IAM user or role executing the script needs the following minimum S3 permissions:
+
+- `s3:ListAllMyBuckets`
+- `s3:GetBucketLocation`
+- `s3:GetBucketPublicAccessBlock`
+- `s3:GetBucketAcl`
+- `s3:GetBucketPolicy`
+- `s3:GetEncryptionConfiguration`
+- `s3:GetBucketLogging`
+- `s3:GetBucketVersioning`
+
+It's recommended to follow the principle of least privilege when configuring credentials.
+
 ## Setup
 
 1. Clone this repository
@@ -42,6 +56,19 @@ python s3_scanner.py --buckets bucket1,bucket2
 # Save detailed report to a file
 python s3_scanner.py --report detailed --output detailed_report.txt
 ```
+
+## Understanding the Output
+
+The script provides a console report summarizing the security status of each scanned S3 bucket.
+
+### Console Report Symbols:
+-   **✓** (Green Checkmark): Indicates a secure configuration or that a recommended feature is enabled.
+-   **✗** (Red X): Indicates an insecure configuration or that a recommended feature is not enabled.
+-   **?** (Yellow Question Mark): Indicates that the status could not be determined (e.g., due to an API error, insufficient permissions for that specific check, or the feature is not applicable). Warnings will be printed to the console for such cases.
+
+The "Overall" column gives a quick summary: "Secure" if all checks pass, "Insecure" otherwise.
+
+For a detailed breakdown of issues and recommendations (if you use the `--report detailed` flag), and an example of the text file output, please see the `examples/sample_report.txt` file in this repository.
 
 ## Security Best Practices Demonstrated
 
