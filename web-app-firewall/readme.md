@@ -1,4 +1,4 @@
-# Web Application Firewall Implementation 🤖
+# Web Application Firewall Implementation
 
 > **Note:** This project is a demonstration of how to set up and configure a web application firewall. It includes configuration files and documentation, but requires actual implementation on a web server to function.
 

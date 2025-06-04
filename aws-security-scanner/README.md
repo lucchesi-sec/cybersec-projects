@@ -1,8 +1,6 @@
-# AWS Security Scanner 🤖
+# AWS Security Scanner
 
 A simple Python tool that scans AWS resources for common security misconfigurations. The focus is on S3 buckets, which are frequently misconfigured and can lead to data breaches.
-
-> **Note:** This project was developed with significant AI assistance as a learning exercise to understand AWS security concepts and Python programming patterns.
 
 ## Features
 
