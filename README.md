@@ -104,16 +104,7 @@ Projects marked with 🤖 were developed with significant AI assistance as learn
 
 ---
 
-## 🚀 What's Next
-Future additions as I continue learning may include:
-- Simple network scanner using bash scripts
-- Docker security basics with container hardening examples
-- Automated security report generation with bash
-- Basic log analysis scripts for intrusion detection
-- Simple firewall rule configuration templates
-- Practical security cheatsheets for common services
-
 ---
 
-## 📬 Contact
+## � Contact
 Reach out via [LinkedIn](https://www.linkedin.com/in/enzo-lucchesi) if you'd like to connect or discuss these projects.
