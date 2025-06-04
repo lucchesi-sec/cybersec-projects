@@ -9,7 +9,7 @@ YELLOW="\e[33m"
 RESET="\e[0m"
 
 PASS_COUNT=0
-TOTAL_CHECKS=28 # Updated count: SSH(5), UFW(4), F2B(2), UU(1), PWPolicy(1), Auditd(4), Banner(1), Sysctl(10)
+TOTAL_CHECKS=29 # Updated count: SSH(5), UFW(4), F2B(2), UU(1), PWPolicy(2), Auditd(4), Banner(1), Sysctl(10)
 
 print_result() {
   if [ "$1" -eq 0 ]; then
@@ -104,15 +104,27 @@ print_result $? "Unattended security upgrades are enabled"
 
 # 5. Check password aging policy (system-wide)
 echo -e "\n[PASSWORD POLICY]"
+# Check /etc/login.defs for aging
 PASS_MAX_DAYS=$(grep "^PASS_MAX_DAYS" /etc/login.defs | awk '{print $2}')
 PASS_MIN_DAYS=$(grep "^PASS_MIN_DAYS" /etc/login.defs | awk '{print $2}')
 PASS_WARN_AGE=$(grep "^PASS_WARN_AGE" /etc/login.defs | awk '{print $2}')
 
-if [[ "$PASS_MAX_DAYS" -le 90 && "$PASS_MIN_DAYS" -ge 7 && "$PASS_WARN_AGE" -ge 14 ]]; then
-  print_result 0 "Password aging policy enforced: MAX_DAYS=$PASS_MAX_DAYS MIN_DAYS=$PASS_MIN_DAYS WARN_AGE=$PASS_WARN_AGE"
+if [[ "$PASS_MAX_DAYS" -eq 90 && "$PASS_MIN_DAYS" -eq 7 && "$PASS_WARN_AGE" -eq 14 ]]; then
+  print_result 0 "Password aging policy (/etc/login.defs) correctly set: MAX_DAYS=$PASS_MAX_DAYS MIN_DAYS=$PASS_MIN_DAYS WARN_AGE=$PASS_WARN_AGE"
 else
-  print_result 1 "Password aging policy NOT enforced properly: MAX_DAYS=$PASS_MAX_DAYS MIN_DAYS=$PASS_MIN_DAYS WARN_AGE=$PASS_WARN_AGE"
+  print_result 1 "Password aging policy (/etc/login.defs) NOT correctly set: MAX_DAYS=$PASS_MAX_DAYS MIN_DAYS=$PASS_MIN_DAYS WARN_AGE=$PASS_WARN_AGE (Expected: 90, 7, 14)"
 fi
+
+# Check /etc/pam.d/common-password for pam_pwquality.so settings
+# Expected: password requisite pam_pwquality.so retry=3 minlen=14 difok=3 ucredit=-1 lcredit=-1 dcredit=-1 ocredit=-1
+COMMON_PASSWORD_FILE="/etc/pam.d/common-password"
+EXPECTED_PWQUALITY_REGEX="^password\s+requisite\s+pam_pwquality\.so\s+retry=3\s+minlen=14\s+difok=3\s+ucredit=-1\s+lcredit=-1\s+dcredit=-1\s+ocredit=-1"
+if grep -qE "$EXPECTED_PWQUALITY_REGEX" "$COMMON_PASSWORD_FILE"; then
+    print_result 0 "Password complexity (pam_pwquality.so) correctly configured in $COMMON_PASSWORD_FILE"
+else
+    print_result 1 "Password complexity (pam_pwquality.so) NOT correctly configured in $COMMON_PASSWORD_FILE"
+fi
+
 
 # 6. Check auditd status and rules
 echo -e "\n[AUDIT LOGGING]"
