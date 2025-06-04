@@ -14,7 +14,7 @@ The project addresses the following hardening areas, now largely automated by th
 -   **Firewall (UFW):** Installs UFW (firewall configuration within scripts is minimal - requires manual setup or enhancement).
 -   **Intrusion Prevention (Fail2ban):** Installs and enables the SSH jail.
 -   **Automatic Security Updates:** Installs `unattended-upgrades`.
--   **Password Policy Enforcement:** Checks system-wide policy (script does not currently *set* `pam_pwquality` rules).
+-   **Password Policy Enforcement:** Installs `libpam-pwquality` and configures password complexity rules in `/etc/pam.d/common-password` and password aging policies in `/etc/login.defs`.
 -   **Audit Logging (`auditd`):** Installs `auditd` and applies a baseline ruleset.
 -   **Legal Warning Banner:** Sets a standard warning banner in `/etc/issue.net`.
 -   **Kernel Parameters (`sysctl`):** Applies security-focused network, memory, and filesystem settings.
@@ -29,7 +29,8 @@ This repository now includes scripts to automate the installation, configuration
 
 *   `apply-all.sh`: Master script to run all installation and configuration steps. **Run this first.**
 *   `check-hardening.sh`: Checks the system against the applied hardening settings and provides a score. **Run this after `apply-all.sh`.**
-*   `install-packages.sh`: Installs required packages (`ufw`, `fail2ban`, `auditd`, `unattended-upgrades`).
+*   `install-packages.sh`: Installs required packages (`ufw`, `fail2ban`, `auditd`, `unattended-upgrades`, `libpam-pwquality`).
+*   `password-policy/`: Contains `apply-pam-pwquality.sh` to configure password complexity and aging.
 *   `ssh-config/`: Contains `apply-ssh-config.sh` to harden `/etc/ssh/sshd_config`.
 *   `fail2ban/`: Contains `apply-fail2ban-config.sh` to setup `/etc/fail2ban/jail.local` and enable the SSH jail.
 *   `auditd-rules/`: Contains `apply-auditd-rules.sh` to apply baseline rules to `/etc/audit/rules.d/`.
@@ -104,7 +105,7 @@ This repository now includes scripts to automate the installation, configuration
 - Fail2ban
 - Auditd / Ausearch / Aureport / Auditctl
 - `sysctl`
-- PAM (`pam_pwquality.so`) for password complexity enforcement (*Note: Checked but not configured by scripts*)
+- PAM (`libpam-pwquality` and `pam_pwquality.so`) for password complexity and aging enforcement
 - Unattended Upgrades (APT)
 - Git
 
