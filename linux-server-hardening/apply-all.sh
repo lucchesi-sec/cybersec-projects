@@ -44,6 +44,7 @@ check_sudo
 
 # Define script paths
 INSTALL_SCRIPT="install-packages.sh"
+PW_POLICY_SCRIPT="password-policy/apply-pam-pwquality.sh"
 SSH_CONFIG_SCRIPT="ssh-config/apply-ssh-config.sh"
 FAIL2BAN_SCRIPT="fail2ban/apply-fail2ban-config.sh"
 AUDITD_SCRIPT="auditd-rules/apply-auditd-rules.sh"
@@ -52,6 +53,7 @@ SYSCTL_SCRIPT="sysctl/apply-sysctl-config.sh"
 
 # Execute scripts in order, stopping if any fail
 run_script "$INSTALL_SCRIPT" && \
+run_script "$PW_POLICY_SCRIPT" && \
 run_script "$SSH_CONFIG_SCRIPT" && \
 run_script "$FAIL2BAN_SCRIPT" && \
 run_script "$AUDITD_SCRIPT" && \

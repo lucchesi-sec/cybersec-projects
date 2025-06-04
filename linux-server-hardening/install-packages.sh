@@ -18,6 +18,9 @@ sudo apt install -y auditd
 echo "Installing unattended-upgrades (automatic updates)..."
 sudo apt install -y unattended-upgrades
 
+echo "Installing libpam-pwquality (password quality checking)..."
+sudo apt install -y libpam-pwquality
+
 echo "Installation complete."
 
 echo "Configuring basic UFW rules..."
