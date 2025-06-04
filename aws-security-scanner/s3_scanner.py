@@ -117,6 +117,34 @@ def check_bucket_logging(s3_client, bucket_name):
         print(f"{Fore.YELLOW}Warning: Could not check logging for {bucket_name}: {str(e)}{Style.RESET_ALL}")
         return "Unknown"
 
+def check_bucket_versioning(s3_client, bucket_name):
+    """Check if versioning is enabled on the bucket."""
+    try:
+        versioning = s3_client.get_bucket_versioning(Bucket=bucket_name)
+        status = versioning.get('Status', 'Disabled') # Can be Enabled, Suspended, or not present (implies Disabled)
+        return status == 'Enabled'
+    except ClientError as e:
+        # Buckets without versioning explicitly set might not return an error,
+        # but if there's an actual client error (e.g. permissions), log it.
+        print(f"{Fore.YELLOW}Warning: Could not check versioning for {bucket_name}: {str(e)}{Style.RESET_ALL}")
+        return "Unknown"
+    except Exception as e: # Catch any other unexpected errors
+        print(f"{Fore.YELLOW}Warning: Unexpected error checking versioning for {bucket_name}: {str(e)}{Style.RESET_ALL}")
+        return "Unknown"
+
+def check_bucket_mfa_delete(s3_client, bucket_name):
+    """Check if MFA Delete is enabled on the bucket."""
+    try:
+        versioning = s3_client.get_bucket_versioning(Bucket=bucket_name)
+        mfa_delete = versioning.get('MFADelete', 'Disabled') # Can be Enabled or Disabled
+        return mfa_delete == 'Enabled'
+    except ClientError as e:
+        print(f"{Fore.YELLOW}Warning: Could not check MFA Delete for {bucket_name}: {str(e)}{Style.RESET_ALL}")
+        return "Unknown"
+    except Exception as e: # Catch any other unexpected errors
+        print(f"{Fore.YELLOW}Warning: Unexpected error checking MFA Delete for {bucket_name}: {str(e)}{Style.RESET_ALL}")
+        return "Unknown"
+
 def scan_bucket(s3_client, bucket_name):
     """Scan a single bucket for security issues."""
     print(f"Scanning bucket: {Fore.CYAN}{bucket_name}{Style.RESET_ALL}...")
@@ -125,7 +153,9 @@ def scan_bucket(s3_client, bucket_name):
         'name': bucket_name,
         'public_access': check_bucket_public_access(s3_client, bucket_name),
         'encryption': check_bucket_encryption(s3_client, bucket_name),
-        'logging': check_bucket_logging(s3_client, bucket_name)
+        'logging': check_bucket_logging(s3_client, bucket_name),
+        'versioning': check_bucket_versioning(s3_client, bucket_name),
+        'mfa_delete': check_bucket_mfa_delete(s3_client, bucket_name)
     }
 
     return results
@@ -170,6 +200,20 @@ def print_report(scan_results, report_type='basic'):
         logging_status = format_check_result(result['logging'])
         if result['logging'] != True:
             is_secure = False
+        
+        # Versioning check (should be True for secure)
+        versioning_status = format_check_result(result['versioning'])
+        if result['versioning'] != True: # Not enabled or unknown
+            is_secure = False
+
+        # MFA Delete check (should be True if versioning is enabled)
+        mfa_delete_status = format_check_result(result['mfa_delete'])
+        if result['versioning'] == True and result['mfa_delete'] != True: # Versioning enabled, but MFA delete not or unknown
+            is_secure = False
+        elif result['versioning'] != True and result['mfa_delete'] == True: # MFA delete somehow true without versioning (should not happen)
+             mfa_delete_status = f"{Fore.YELLOW}? (Versioning off){Style.RESET_ALL}" # Mark as odd
+             is_secure = False
+
 
         # Overall status
         overall = f"{Fore.GREEN}Secure{Style.RESET_ALL}" if is_secure else f"{Fore.RED}Insecure{Style.RESET_ALL}"
@@ -179,11 +223,13 @@ def print_report(scan_results, report_type='basic'):
             public_status,
             encryption_status,
             logging_status,
+            versioning_status,
+            mfa_delete_status,
             overall
         ])
 
     # Print table
-    headers = ["Bucket Name", "Public Access", "Encryption", "Logging", "Overall"]
+    headers = ["Bucket Name", "Public Access", "Encryption", "Logging", "Versioning", "MFA Delete", "Overall"]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
     # Print detailed recommendations for insecure buckets
@@ -206,6 +252,21 @@ def print_report(scan_results, report_type='basic'):
                 issues.append("Access logging is not enabled.")
             elif result['logging'] == "Unknown":
                 issues.append("Could not determine logging status.")
+            
+            if result['versioning'] == False:
+                issues.append("Bucket versioning is not enabled.")
+            elif result['versioning'] == "Unknown":
+                issues.append("Could not determine versioning status.")
+
+            if result['mfa_delete'] == False:
+                # Only an issue if versioning is (or should be) enabled
+                if result['versioning'] == True :
+                    issues.append("MFA Delete is not enabled (recommended with versioning).")
+                elif result['versioning'] == "Unknown":
+                     issues.append("MFA Delete status unknown (versioning status also unknown).")
+            elif result['mfa_delete'] == "Unknown" and result['versioning'] == True:
+                 issues.append("Could not determine MFA Delete status (versioning is enabled).")
+
 
             if issues:
                 print(f"\n{Fore.YELLOW}Issues for {result['name']}:{Style.RESET_ALL}")
@@ -221,6 +282,10 @@ def print_report(scan_results, report_type='basic'):
                     print("  • Enable default encryption with SSE-S3 or SSE-KMS")
                 if result['logging'] == False:
                     print("  • Enable access logging to track requests to the bucket")
+                if result['versioning'] == False:
+                    print("  • Enable bucket versioning to protect against accidental deletions and overwrites.")
+                if result['mfa_delete'] == False and result['versioning'] == True:
+                    print("  • Enable MFA Delete for an additional layer of security on versioned buckets.")
 
 def save_report_to_file(scan_results, filename):
     """Save the report to a file."""
@@ -237,6 +302,8 @@ def save_report_to_file(scan_results, filename):
                 f.write(f"  Public Access: {'Yes' if result['public_access'] == True else 'No' if result['public_access'] == False else 'Unknown'}\n")
                 f.write(f"  Encryption: {'Enabled' if result['encryption'] == True else 'Disabled' if result['encryption'] == False else 'Unknown'}\n")
                 f.write(f"  Logging: {'Enabled' if result['logging'] == True else 'Disabled' if result['logging'] == False else 'Unknown'}\n")
+                f.write(f"  Versioning: {'Enabled' if result['versioning'] == True else 'Disabled' if result['versioning'] == False else 'Unknown'}\n")
+                f.write(f"  MFA Delete: {'Enabled' if result['mfa_delete'] == True else 'Disabled' if result['mfa_delete'] == False else 'Unknown'}\n")
                 f.write("\n")
 
         print(f"{Fore.GREEN}Report saved to {filename}{Style.RESET_ALL}")
