@@ -82,6 +82,18 @@ Includes colored CLI output and CSV/text reporting capabilities.
 
 ---
 
+### ✅ [PowerShell Automation Scripts](./powershell-automation/) 🤖
+A collection of PowerShell scripts for Windows system administration, security auditing, and basic incident response tasks.
+- **System Information & Auditing:** Scripts to gather comprehensive system details, local user information, and monitor critical services.
+- **Log Analysis:** Tools for querying system/security event logs for errors, warnings, or specific event IDs.
+- **Security Configuration Checks:** Scripts to verify patch levels, antivirus status, and audit scheduled tasks.
+- **Volatile Data Collection:** Utilities to capture live network connections, ARP/DNS cache, and logged-on user data.
+- **Administrative Tasks:** Scripts for checking low disk space and managing temporary files.
+
+Includes 13 initial scripts with comment-based help and clean console output.
+
+---
+
 ## 🎯 Purpose
 This repo serves as my personal cybersecurity lab space. The focus is on learning by doing — applying security concepts in a way that directly maps to real-world environments.
 
