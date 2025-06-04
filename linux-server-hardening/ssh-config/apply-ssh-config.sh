@@ -82,6 +82,9 @@ set_ssh_config "Banner" "/etc/issue.net" "$SSH_CONFIG_FILE"
 
 # --- End Optional Settings ---
 
+echo "Ensuring SSH privilege separation directory exists..."
+sudo mkdir -p /run/sshd
+sudo chmod 0755 /run/sshd
 
 echo "Validating SSH configuration..."
 sudo sshd -t
