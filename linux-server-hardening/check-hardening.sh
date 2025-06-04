@@ -9,7 +9,7 @@ RESET="\e[0m"
 CYAN="\e[36m" # For Importance/Fix labels
 
 PASS_COUNT=0
-TOTAL_CHECKS=29 # SSH(5), UFW(4), F2B(2), UU(1), PWPolicy(2), Auditd(4), Banner(1), Sysctl(10)
+TOTAL_CHECKS=28 # SSH(5), UFW(3), F2B(2), UU(1), PWPolicy(2), Auditd(4), Banner(1), Sysctl(10)
 
 print_result() {
   local status_code=$1
