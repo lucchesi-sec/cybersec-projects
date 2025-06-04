@@ -105,9 +105,15 @@ print_result $? "Unattended security upgrades are enabled"
 # 5. Check password aging policy (system-wide)
 echo -e "\n[PASSWORD POLICY]"
 # Check /etc/login.defs for aging
-PASS_MAX_DAYS=$(grep -E "^\s*PASS_MAX_DAYS\s+" /etc/login.defs | sed -e 's/#.*//' | awk '{print $2}')
-PASS_MIN_DAYS=$(grep -E "^\s*PASS_MIN_DAYS\s+" /etc/login.defs | sed -e 's/#.*//' | awk '{print $2}')
-PASS_WARN_AGE=$(grep -E "^\s*PASS_WARN_AGE\s+" /etc/login.defs | sed -e 's/#.*//' | awk '{print $2}')
+
+# Helper function to robustly get login.defs values
+get_login_def_value() {
+    grep -E "^\s*$1\s+" /etc/login.defs | sed -e 's/#.*//' -e 's/\r$//' | awk '{print $2}' | head -n 1
+}
+
+PASS_MAX_DAYS=$(get_login_def_value "PASS_MAX_DAYS")
+PASS_MIN_DAYS=$(get_login_def_value "PASS_MIN_DAYS")
+PASS_WARN_AGE=$(get_login_def_value "PASS_WARN_AGE")
 
 # Ensure variables are not empty before comparison
 PASS_MAX_DAYS=${PASS_MAX_DAYS:-0}
