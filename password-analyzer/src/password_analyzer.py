@@ -208,7 +208,10 @@ def analyze_password(password):
     
     # Calculate final score using weighted average
     final_score = (
-        (min(100, entropy * 4) * ENTROPY_WEIGHT) +
+        # Scale entropy down instead of up so weak passwords don't
+        # automatically receive a high score. This prevents short,
+        # simple passwords from appearing "Strong".
+        (min(100, entropy / 4) * ENTROPY_WEIGHT) +
         (complexity_score * COMPLEXITY_WEIGHT) +
         (pattern_score * PATTERN_WEIGHT)
     )
