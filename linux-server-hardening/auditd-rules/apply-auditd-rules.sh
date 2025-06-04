@@ -98,18 +98,30 @@ if command -v augenrules &> /dev/null; then
     sudo augenrules --load
     if [ $? -eq 0 ]; then
         echo "augenrules --load successful."
-        # Even if auditctl failed, augenrules might fix it and load on next boot/reload
-        # If auditctl previously succeeded, this confirms persistence
         RULES_LOADED_SUCCESSFULLY=1
     else
-        echo "Warning: 'augenrules --load' failed. Rules might not persist. Check auditd configuration."
-        # If auditctl also failed, definitely a problem
+        echo "Warning: First attempt of 'augenrules --load' failed. Attempting auditd restart and retry."
+        sudo systemctl restart auditd
+        sleep 2 # Give service a moment to restart
+        echo "Retrying 'augenrules --load' after auditd restart..."
+        sudo augenrules --load
+        if [ $? -eq 0 ]; then
+            echo "augenrules --load successful after auditd restart."
+            RULES_LOADED_SUCCESSFULLY=1
+        else
+            echo "Warning: 'augenrules --load' still failed after auditd restart. Rules might not persist."
+            # RULES_LOADED_SUCCESSFULLY remains 0 or based on auditctl -R
+        fi
     fi
 else
     echo "Warning: 'augenrules' command not found. Rules may not persist across reboots."
+    # If auditctl -R was successful, we can still consider rules loaded for the current session.
+    # RULES_LOADED_SUCCESSFULLY would be 1 from the auditctl -R check.
 fi
 
 # 3. If direct load or augenrules failed, try restarting the service as a last resort
+# This section might be redundant now if augenrules retry logic includes a restart,
+# but keeping it as a final fallback if RULES_LOADED_SUCCESSFULLY is still 0.
 if [ "$RULES_LOADED_SUCCESSFULLY" -eq 0 ]; then
     echo "Warning: Rule loading via auditctl/augenrules failed or was incomplete. Attempting service restart..."
     sudo systemctl restart auditd
