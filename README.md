@@ -3,6 +3,9 @@
 ![AWS](https://img.shields.io/badge/AWS-Security-green)
 ![Linux](https://img.shields.io/badge/Linux-Hardening-yellow)
 ![Security+](https://img.shields.io/badge/Security%2B-In%20Progress-orange)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/lucchesi-sec/cybersec-projects)
+![GitHub repo size](https://img.shields.io/github/repo-size/lucchesi-sec/cybersec-projects)
 
 # Cybersecurity Projects
 
