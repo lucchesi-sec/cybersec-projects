@@ -1,9 +1,7 @@
-# Password Strength Analyzer 🤖
+# Password Strength Analyzer
 
 ## Overview
 This project provides a comprehensive password strength analysis tool that evaluates passwords against NIST SP 800-63B and OWASP guidelines. The analyzer checks password complexity, detects common patterns, and calculates entropy to provide a holistic security assessment with specific recommendations for improvement.
-
-> **Note:** This project was developed with significant AI assistance as a learning exercise to understand password security concepts and Python programming patterns.
 
 ## Why Analyze Password Strength?
 - Weak passwords remain one of the top causes of security breaches
