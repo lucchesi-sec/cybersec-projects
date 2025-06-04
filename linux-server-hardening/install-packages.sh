@@ -20,10 +20,16 @@ sudo apt install -y unattended-upgrades
 
 echo "Installation complete."
 
-# Optional: Enable basic UFW rules (allow SSH, deny incoming)
-# Uncomment the following lines if you want to enable UFW immediately
-# echo "Configuring basic UFW rules..."
-# sudo ufw allow OpenSSH
-# sudo ufw --force enable # Use --force to avoid interactive prompt in script
+echo "Configuring basic UFW rules..."
+# Set default policies
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
 
-echo "Remember to configure the installed services (UFW, Fail2Ban, Auditd) appropriately."
+# Allow SSH connections (OpenSSH is the service name)
+sudo ufw allow OpenSSH
+
+# Enable UFW - use --force to avoid interactive prompt in script
+sudo ufw --force enable
+
+echo "UFW has been configured with basic rules and enabled."
+echo "Remember to further configure services like Fail2Ban and Auditd as needed."
