@@ -27,13 +27,14 @@ gantt
 | Priority | Project | Task | Status | Owner |
 |----------|---------|------|--------|-------|
 | 🔴 High | Linux Hardening | Implement CIS Level 1 Benchmark | In Progress | @enzolucchesi |
-| 🟠 Medium | Cloud Security | Expand AWS scanner to cover IAM policies | Planned | @enzolucchesi |
+| 🟠 Medium | Cloud Security | Develop Multi-Cloud Security Scanner | Planned | @enzolucchesi |
 | 🟢 Low | Security Automation | Integrate SAST into CI/CD pipeline | Backlog | @enzolucchesi |
 
 ## ✅ Completed Tasks
 - [x] Implement SSH key rotation automation
 - [x] Create AWS S3 security auditor
 - [x] Develop PowerShell security auditing modules
+- [x] Create AWS IAM Policy Analyzer
 
 ## 📊 Security Metrics
 ```mermaid

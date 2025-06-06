@@ -12,6 +12,17 @@ Each project is self-contained within its respective directory. For detailed inf
 
 ## 📂 Projects
 
+### [AWS IAM Policy Analyzer](./cloud-iam-analyzer/)
+![Python](https://img.shields.io/badge/Python-3.11-blue) ![AWS](https://img.shields.io/badge/AWS-Security-green)
+
+Identifies excessive permissions in AWS IAM policies:
+- Detects wildcard actions and resources
+- Flags sensitive permissions (Delete, Put, Update)
+- Provides risk assessment with remediation guidance
+- Supports text and JSON output formats
+
+---
+
 ### [Linux Server Hardening Lab](./linux-server-hardening/)
 ![Linux](https://img.shields.io/badge/Linux-Hardening-yellow)
 
