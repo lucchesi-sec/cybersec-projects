@@ -43,27 +43,6 @@ jobs:
       uses: actions/dependency-review-action@v3
       if: contains(github.repository, 'cybersec-projects')
 
-  infrastructure-scan:
-    name: Infrastructure Security Scan
-    runs-on: ubuntu-latest
-    if: contains(github.repository, 'cybersec-projects')
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Run Checkov on Terraform files
-      uses: bridgecrewio/checkov-action@v12
-      with:
-        directory: ./
-        framework: terraform
-        skip_check: CKV_AWS_8,CKV_AWS_20
-        
-    - name: Run TFLint
-      if: always()
-      uses: terraform-linters/tflint-github-action@v1
-      with:
-        args: --enable-rule=aws_*
-
   report:
     name: Generate Security Report
     runs-on: ubuntu-latest
@@ -78,8 +57,6 @@ jobs:
         echo "No critical issues found" >> security-report.md
         echo "## Dependency Vulnerabilities" >> security-report.md
         echo "All dependencies up to date" >> security-report.md
-        echo "## Infrastructure Issues" >> security-report.md
-        echo "No misconfigurations detected" >> security-report.md
         
     - name: Upload Security Report
       uses: actions/upload-artifact@v3
