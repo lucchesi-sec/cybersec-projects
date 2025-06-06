@@ -14,6 +14,7 @@ Each project is self-contained within its respective directory. For detailed inf
 
 ### [Linux Server Hardening Lab](./linux-server-hardening/)
 ![Linux](https://img.shields.io/badge/Linux-Hardening-yellow)
+
 Hardened a Linux (Ubuntu 22.04 ARM) virtual machine using common security best practices:
 - SSH key-only login
 - Firewall configuration (UFW)
@@ -29,6 +30,7 @@ Includes configuration files, audit logs, and an automation script to collect th
 
 ### [SSH Key Rotation Automation](./ssh-key-rotation/)
 ![Linux](https://img.shields.io/badge/Linux-Automation-yellow)
+
 An automated script for rotating SSH keys on Linux servers with safety and audit logging features:
 - Supports multiple old keys via `old-keys.txt`.
 - Automatically detects old key fingerprints and matches against the server's `authorized_keys`.
@@ -53,6 +55,7 @@ Includes configuration files, testing scripts, and a detailed installation guide
 
 ### [Password Strength Analyzer](./password-analyzer/)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
+
 A Python-based tool for comprehensive password security evaluation according to NIST and OWASP guidelines:
 - Password scoring against security best practices
 - Detection of common patterns and vulnerabilities
@@ -66,6 +69,7 @@ Includes test suite, dictionary data, and educational security guidance.
 
 ### [Basic Malware Analysis Lab](./malware-analysis-lab/)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
+
 A safe and educational tool for performing static analysis on potentially malicious files:
 - File type identification and hash calculation
 - PE (Portable Executable) header analysis
@@ -80,6 +84,7 @@ Includes comprehensive analysis script, YARA rules, and educational documentatio
 
 ### [AWS Security Scanner](./aws-security-scanner/)
 ![Python](https://img.shields.io/badge/Python-3.11-blue) ![AWS](https://img.shields.io/badge/AWS-Security-green)
+
 A Python tool for detecting common security misconfigurations in AWS S3 buckets:
 - Identifies publicly accessible buckets
 - Checks for server-side encryption settings
@@ -93,6 +98,7 @@ Includes colored CLI output and CSV/text reporting capabilities.
 
 ### [PowerShell Automation Scripts](./powershell-automation/)
 ![PowerShell](https://img.shields.io/badge/PowerShell-Automation-blue)
+
 A collection of PowerShell scripts for Windows system administration, security auditing, and basic incident response tasks.
 - **System Information & Auditing:** Scripts to gather comprehensive system details, local user information, and monitor critical services.
 - **Log Analysis:** Tools for querying system/security event logs for errors, warnings, or specific event IDs.
