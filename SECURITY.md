@@ -1,9 +1,5 @@
 # Security Policy
 
-## 🔒 Reporting Vulnerabilities
-**Please report security issues to:** security@enzolucchesi.com  
-**Response time:** We aim to respond within 48 hours
-
 ## 🛡️ Security Best Practices
 This portfolio follows these security standards:
 - Defense in Depth implementation
