@@ -88,33 +88,3 @@ Contributions are welcome! If you have improvements, bug fixes, or new script id
 6.  Open a Pull Request against the main repository.
 
 Please ensure any contributed scripts adhere to a similar style and quality, focusing on clear output and robust error handling.
-
-## License
-
-This project is intended for educational and operational use. Please choose a license that suits your needs if you plan to distribute this widely. A common choice for open-source projects is the [MIT License](https://opensource.org/licenses/MIT).
-
-**Placeholder for MIT License Text (if chosen):**
-```
-MIT License
-
-Copyright (c) [Year] [Your Name/Organization]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-Replace `[Year]` and `[Your Name/Organization]` if you use this license.
