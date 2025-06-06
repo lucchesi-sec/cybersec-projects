@@ -40,19 +40,6 @@ An automated script for rotating SSH keys on Linux servers with safety and audit
 
 ---
 
-### [Web Application Firewall Implementation](./web-app-firewall/)
-A demonstration of ModSecurity WAF setup with OWASP Core Rule Set (CRS) to protect web applications:
-- SQL injection protection
-- Cross-site scripting (XSS) prevention
-- Local/remote file inclusion blocking
-- Command injection defense
-- Custom security rule creation
-- Before/after demonstrations of attack blocking
-
-Includes configuration files, testing scripts, and a detailed installation guide.
-
----
-
 ### [Password Strength Analyzer](./password-analyzer/)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 
