@@ -22,7 +22,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        languages: python, javascript
+        languages: python
         config-file: ./.github/codeql-config.yml
 
     - name: Perform CodeQL Analysis
@@ -37,10 +37,6 @@ jobs:
       
     - name: Scan Python dependencies
       uses: py-actions/py-dependency-review@v0.5.0
-      if: contains(github.repository, 'cybersec-projects')
-      
-    - name: Scan Node.js dependencies
-      uses: actions/dependency-review-action@v3
       if: contains(github.repository, 'cybersec-projects')
 
   report:
