@@ -141,4 +141,4 @@ This repo serves as my personal cybersecurity lab space. The focus is on learnin
 ## 📧 Contact
 Reach out via [LinkedIn](https://www.linkedin.com/in/enzo-lucchesi) if you'd like to connect or discuss these projects.
 
-<div class="badge-base LI-profile-badge" data-locale="en_US" data-size="medium" data-theme="dark" data-type="VERTICAL" data-vanity="enzolucchesi" data-version="v1"><a class="badge-base__link LI-simple-link" href="https://www.linkedin.com/in/enzolucchesi?trk=profile-badge">Enzo Lucchesi</a></div>
+[![Enzo Lucchesi's LinkedIn Profile](https://static.licdn.com/sc/h/1c5u578iilxfi4m4dvc4q810q)](https://www.linkedin.com/in/enzolucchesi?trk=profile-badge)
