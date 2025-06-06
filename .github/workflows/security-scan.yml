@@ -31,13 +31,48 @@ jobs:
   dependency-scan:
     name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Scan Python dependencies
-      uses: py-actions/py-dependency-review@v0.5.0
-      if: contains(github.repository, 'cybersec-projects')
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+        
+    - name: Install Python dependencies
+      run: pip install -r requirements.txt
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Generate dependency graph
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { execSync } = require('child_process');
+          execSync('pip list --format=json > dependencies.json');
+          const fs = require('fs');
+          const dependencies = JSON.parse(fs.readFileSync('dependencies.json', 'utf8'));
+          const payload = {
+            dependencies: dependencies.map(dep => ({
+              package: {
+                ecosystem: 'pip',
+                name: dep.name,
+                version: dep.version
+              }
+            }))
+          };
+          await github.rest.dependencyGraph.submitDependencies({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ...payload
+          });
 
   report:
     name: Generate Security Report
