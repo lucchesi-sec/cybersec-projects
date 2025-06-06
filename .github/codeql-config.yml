@@ -1,0 +1,10 @@
+---
+name: "Default CodeQL Configuration"
+disable-default-queries: false
+queries:
+  - uses: security-and-quality
+paths:
+  - aws-security-scanner/
+  - malware-analysis-lab/
+  - password-analyzer/
+  - powershell-automation/
