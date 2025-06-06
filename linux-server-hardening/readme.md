@@ -5,6 +5,55 @@ This project provides a collection of scripts to help automate the hardening of 
 
 The original lab involved manually hardening a VM on a MacBook using UTM. These scripts aim to automate many of those steps and serve as a practical learning exercise in Linux system administration and security.
 
+## 🔒 Security Impact
+
+This project demonstrates key defensive security principles through layered security controls:
+
+- **Defense in Depth**: Multiple security layers (firewall, IDS, authentication controls)
+- **Least Privilege**: SSH key-only access, restricted root login
+- **Automated Compliance**: Scripted enforcement of security configurations
+- **Auditability**: Comprehensive logging with auditd
+- **Maintainability**: Automated security updates and configuration management
+
+### Threat Model
+
+```mermaid
+graph TD
+    A[Attacker] -->|Port Scanning| B(Network Access)
+    B -->|SSH Brute Force| C[Firewall]
+    C -->|Allowed Port 22| D[SSH Service]
+    D -->|Key-based Auth| E[Fail2ban]
+    E -->|Block Brute-force| F[System Access]
+    F -->|Audit Logging| G[Auditd]
+    G -->|Monitor Activity| H[Security Alerts]
+    H -->|Respond| I[Admin]
+```
+
+## ☁️ Cloud Security Relevance
+
+While focused on on-prem servers, these hardening principles directly apply to cloud environments:
+
+1. **Cloud Instance Hardening**: Same security controls protect cloud VMs
+2. **Compliance Frameworks**: Meets requirements for CIS, NIST, ISO 27001
+3. **Infrastructure as Code**: Scripts can be integrated into cloud init scripts
+4. **Defense in Depth**: Layered approach aligns with cloud security best practices
+
+## Project Roadmap
+
+```mermaid
+gantt
+    title Linux Hardening Roadmap
+    dateFormat  YYYY-MM-DD
+    section Core Features
+    SSH Hardening      :done,    des1, 2025-05-01, 15d
+    Firewall Config    :done,    des2, 2025-05-16, 10d
+    Audit Logging      :done,    des3, 2025-05-26, 14d
+    section Future Enhancements
+    CIS Benchmark Compliance :active,  des4, 2025-06-10, 21d
+    Cloud Integration       :         des5, after des4, 14d
+    Container Hardening     :         des6, after des5, 21d
+```
+
 ---
 
 ## Hardening Areas Covered (Manual & Automated)

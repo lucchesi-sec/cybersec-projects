@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e # Exit immediately if a command exits with a non-zero status.
 
+# DEFENSIVE AUTOMATION: Hardening SSH configuration to prevent unauthorized access
 # Script to apply secure SSH configurations
 
 SSH_CONFIG_FILE="/etc/ssh/sshd_config"
