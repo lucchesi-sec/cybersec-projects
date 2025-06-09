@@ -48,10 +48,14 @@ jobs:
       with:
         python-version: '3.x'
         
+    - name: Debug - Print current directory
+      run: pwd
+      
+    - name: Debug - List project files
+      run: ls -l ${{ matrix.project }}
+      
     - name: Install Python dependencies
-      run: |
-        cd ${{ matrix.project }}
-        pip install -r requirements.txt
+      run: pip install -r ${{ matrix.project }}/requirements.txt
       
     - name: Setup Node.js
       uses: actions/setup-node@v4
