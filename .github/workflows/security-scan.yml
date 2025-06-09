@@ -48,18 +48,12 @@ jobs:
       with:
         python-version: '3.x'
         
-    - name: Debug - Print current directory
-      run: pwd
-      
-    - name: Debug - List project files
-      run: ls -l ${{ matrix.project }}
-      
     - name: Install Python dependencies
-      working-directory: ${{ matrix.project }}
       run: |
-        echo "Current directory before pip install:"
+        cd ${{ matrix.project }}
+        echo "Current directory after cd:"
         pwd
-        echo "Files in current directory:"
+        echo "Files in current directory after cd:"
         ls -l
         pip install -r requirements.txt
       
