@@ -55,7 +55,9 @@ jobs:
       run: ls -l ${{ matrix.project }}
       
     - name: Install Python dependencies
-      run: pip install -r ${{ matrix.project }}/requirements.txt
+      run: |
+        cd ${{ matrix.project }}
+        pip install -r requirements.txt
       
     - name: Setup Node.js
       uses: actions/setup-node@v4
