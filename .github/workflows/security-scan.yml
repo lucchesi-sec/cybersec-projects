@@ -28,81 +28,75 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
 
-  dependency-scan:
+  dependency-vulnerability-scan:
     name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-    strategy:
-      matrix:
-        project: 
-          - aws-security-scanner
-          - cloud-iam-analyzer
-          - malware-analysis-lab
+      contents: read
+      security-events: write
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
-        
-    - name: Install Python dependencies
-      run: |
-        cd ${{ matrix.project }}
-        echo "Current directory after cd:"
-        pwd
-        echo "Files in current directory after cd:"
-        ls -l
-        pip install -r requirements.txt
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        
-    - name: Generate dependency graph
-      uses: actions/github-script@v7
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { execSync } = require('child_process');
-          execSync('pip list --format=json > dependencies.json', {cwd: '${{ matrix.project }}'});
-          const fs = require('fs');
-          const dependencies = JSON.parse(fs.readFileSync('${{ matrix.project }}/dependencies.json', 'utf8'));
-          const payload = {
-            dependencies: dependencies.map(dep => ({
-              package: {
-                ecosystem: 'pip',
-                name: dep.name,
-                version: dep.version
-              }
-            }))
-          };
-          await github.rest.dependencyGraph.submitDependencies({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            ...payload
-          });
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  report:
-    name: Generate Security Report
+      - name: Run dependency vulnerability scan
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: critical
+          comment-summary-in-pr: always
+          warn-only: true
+          
+  trufflehog-scan:
+    name: TruffleHog Secret Scan
     runs-on: ubuntu-latest
-    needs: [codeql-analysis, dependency-scan]
     steps:
-    - name: Generate Security Dashboard
-      run: |
-        echo "Security Scan Results" > security-report.md
-        echo "=====================" >> security-report.md
-        echo "Generated: $(date)" >> security-report.md
-        echo "## CodeQL Findings" >> security-report.md
-        echo "No critical issues found" >> security-report.md
-        echo "## Dependency Vulnerabilities" >> security-report.md
-        echo "All dependencies up to date" >> security-report.md
-        
-    - name: Upload Security Report
-      uses: actions/upload-artifact@v3
-      with:
-        name: security-report
-        path: security-report.md
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog secret scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: .
+          base: ${{ github.event.before }}
+          head: ${{ github.sha }}
+          extra_args: --debug --json
+          
+  report:
+    name: Security Report
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [codeql-analysis, dependency-vulnerability-scan, trufflehog-scan]
+    steps:
+      - name: Generate Security Dashboard
+        run: |
+          echo "Security Scan Report" > security-report.md
+          echo "====================" >> security-report.md
+          echo "Generated: $(date)" >> security-report.md
+          echo "" >> security-report.md
+          echo "### CodeQL Analysis" >> security-report.md
+          if [[ ${{ needs.codeql-analysis.result }} == 'success' ]]; then
+            echo "✅ CodeQL analysis completed successfully." >> security-report.md
+          else
+            echo "❌ CodeQL analysis failed or found issues." >> security-report.md
+          fi
+          echo "" >> security-report.md
+          echo "### Dependency Vulnerability Scan" >> security-report.md
+          if [[ ${{ needs.dependency-vulnerability-scan.result }} == 'success' ]]; then
+            echo "✅ Dependency vulnerability scan completed successfully." >> security-report.md
+          else
+            echo "❌ Dependency vulnerability scan failed or found issues." >> security-report.md
+          fi
+          echo "" >> security-report.md
+          echo "### TruffleHog Secret Scan" >> security-report.md
+          if [[ ${{ needs.trufflehog-scan.result }} == 'success' ]]; then
+            echo "✅ TruffleHog secret scan completed successfully." >> security-report.md
+          else
+            echo "❌ TruffleHog secret scan failed or found issues." >> security-report.md
+          fi
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-report.md
