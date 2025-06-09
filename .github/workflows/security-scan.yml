@@ -33,6 +33,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        project: 
+          - aws-security-scanner
+          - cloud-iam-analyzer
+          - malware-analysis-lab
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -43,7 +49,8 @@ jobs:
         python-version: '3.x'
         
     - name: Install Python dependencies
-      run: pip install -r requirements.txt
+      run: pip install -r ${{ matrix.project }}/requirements.txt
+      working-directory: ${{ matrix.project }}
       
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -56,9 +63,9 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const { execSync } = require('child_process');
-          execSync('pip list --format=json > dependencies.json');
+          execSync('pip list --format=json > dependencies.json', {cwd: '${{ matrix.project }}'});
           const fs = require('fs');
-          const dependencies = JSON.parse(fs.readFileSync('dependencies.json', 'utf8'));
+          const dependencies = JSON.parse(fs.readFileSync('${{ matrix.project }}/dependencies.json', 'utf8'));
           const payload = {
             dependencies: dependencies.map(dep => ({
               package: {
