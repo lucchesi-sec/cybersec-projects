@@ -49,7 +49,7 @@ jobs:
         python-version: '3.x'
         
     - name: Install Python dependencies
-      run: pip install -r ${{ matrix.project }}/requirements.txt
+      run: pip install -r requirements.txt
       working-directory: ${{ matrix.project }}
       
     - name: Setup Node.js
