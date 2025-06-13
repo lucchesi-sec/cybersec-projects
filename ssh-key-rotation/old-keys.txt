@@ -1,0 +1,11 @@
+# This file contains a list of paths to old or unauthorized SSH public keys
+# that should be checked for and removed from the remote server during the
+# key rotation process.
+#
+# Add one full path to a public key file (.pub) per line.
+# Lines starting with # are comments and will be ignored.
+# Tilde expansion (e.g., ~/.ssh/some_key.pub) is supported.
+
+# Example entries:
+# ~/.ssh/id_rsa_old_2021.pub
+# /etc/ssh/keys/departed_user_key.pub

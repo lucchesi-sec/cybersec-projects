@@ -171,51 +171,41 @@ log $LOG_LEVEL_INFO "Backing up authorized_keys on remote server to $BACKUP_FILE
 ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "cp ~/.ssh/authorized_keys $BACKUP_FILE" || \
     log $LOG_LEVEL_WARNING "Failed to backup authorized_keys file"
 
-# Find matching fingerprint remotely
-# Note: This method of reading line-by-line and piping to 'ssh-keygen -lf /dev/stdin'
-# works well for standard authorized_key entries. For lines with complex prefixed options
-# (e.g., from="...", command="..."), its accuracy might vary.
-# A more robust solution would involve parsing each line to extract only the key-type and key-blob.
-log $LOG_LEVEL_INFO "Checking for old key in authorized_keys..."
-OLD_KEY_FOUND=$(ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "
-  while read line; do
-    echo \"\$line\" | ssh-keygen -lf /dev/stdin 2>/dev/null | grep '$OLD_FINGERPRINT' && echo \"FOUND:\$line\" && break
-  done < ~/.ssh/authorized_keys
-")
+# --- Remove primary old key ---
+find_and_remove_key_on_remote "$OLD_FINGERPRINT" "primary old key ($OLD_KEY_PATH)"
 
-if [[ "$OLD_KEY_FOUND" == *"FOUND:"* ]]; then
-    actual_old_key_line="${OLD_KEY_FOUND#FOUND:}" # Remove "FOUND:" prefix
-    log $LOG_LEVEL_WARNING "Old key detected in authorized_keys: $actual_old_key_line"
+# --- Scan for and remove other specified old keys ---
+if [[ -f "$OLD_KEYS_FILE_PATH" ]]; then
+    log $LOG_LEVEL_INFO "Found $OLD_KEYS_FILE_PATH. Scanning for additional old keys to remove."
     
-    read -p "Do you want to remove the old key (see log for exact key line)? [y/N]: " CONFIRM
-    if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
-        log $LOG_LEVEL_INFO "Attempting to remove old key line from remote authorized_keys..."
-        
-        # Prepare the command to be executed remotely.
-        # Using printf to safely quote the line for the remote shell.
-        # The remote command will look like: grep -vF "ssh-rsa AAAA..." ~/.ssh/authorized_keys > ...
-        # We need to escape quotes carefully for the ssh command.
-        # Safest way is often to pass the string as an argument to a remote shell command or use a heredoc for complex cases.
-        # For a single line, careful quoting can work.
-        # Let's try with direct quoting, ensuring $actual_old_key_line is expanded locally.
-        # The outer double quotes are for the local ssh command, inner escaped quotes for remote grep.
-        remote_command="grep -vF -- \"${actual_old_key_line}\" ~/.ssh/authorized_keys > ~/.ssh/authorized_keys.new && mv ~/.ssh/authorized_keys.new ~/.ssh/authorized_keys"
-        
-        log $LOG_LEVEL_DEBUG "Remote command for key removal: $remote_command"
-
-        if ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "$remote_command"; then
-            log $LOG_LEVEL_SUCCESS "Old key removed successfully from remote authorized_keys."
-        else
-            log $LOG_LEVEL_ERROR "Failed to remove old key from remote authorized_keys. Check backup: $BACKUP_FILE"
+    # Read file line by line, even if last line doesn't have a newline
+    while IFS= read -r old_key_pub_path || [[ -n "$old_key_pub_path" ]]; do
+        # Skip empty lines or comments
+        if [[ -z "$old_key_pub_path" || "$old_key_pub_path" == \#* ]]; then
+            continue
         fi
-    else
-        log $LOG_LEVEL_INFO "Old key not removed. Exiting safely."
-    fi
+
+        # Expand tilde to home directory
+        eval expanded_path="$old_key_pub_path"
+
+        if [[ -f "$expanded_path" ]]; then
+            local_fingerprint=$(ssh-keygen -lf "$expanded_path" | awk '{print $2}')
+            if [[ -n "$local_fingerprint" ]]; then
+                log $LOG_LEVEL_DEBUG "Processing key $expanded_path with fingerprint $local_fingerprint"
+                find_and_remove_key_on_remote "$local_fingerprint" "key from old-keys.txt: $old_key_pub_path"
+            else
+                log $LOG_LEVEL_WARNING "Could not get fingerprint for key file: $expanded_path"
+            fi
+        else
+            log $LOG_LEVEL_WARNING "Key file specified in $OLD_KEYS_FILE_PATH not found locally: $old_key_pub_path"
+        fi
+    done < "$OLD_KEYS_FILE_PATH"
 else
-    log $LOG_LEVEL_INFO "Old key fingerprint not found. No action taken."
+    log $LOG_LEVEL_DEBUG "$OLD_KEYS_FILE_PATH not found, skipping scan for additional old keys."
 fi
 
-log $LOG_LEVEL_SUCCESS "SSH key rotation completed at $(date)"
+
+log $LOG_LEVEL_SUCCESS "SSH key rotation and cleanup completed at $(date)"
 
 # Print usage instructions
 if [[ $CURRENT_LOG_LEVEL -le $LOG_LEVEL_INFO ]]; then
