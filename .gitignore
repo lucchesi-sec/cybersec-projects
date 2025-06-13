@@ -184,3 +184,4 @@ cython_debug/
 id_rsa_rotated_*
 *.pem
 *.key
+.aider*
