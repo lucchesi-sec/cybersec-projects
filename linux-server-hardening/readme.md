@@ -34,22 +34,6 @@ While focused on on-prem servers, these hardening principles directly apply to c
 3. **Infrastructure as Code**: Scripts can be integrated into cloud init scripts
 4. **Defense in Depth**: Layered approach aligns with cloud security best practices
 
-## Project Roadmap
-
-```mermaid
-gantt
-    title Linux Hardening Roadmap
-    dateFormat  YYYY-MM-DD
-    section Core Features
-    SSH Hardening      :done,    des1, 2025-05-01, 15d
-    Firewall Config    :done,    des2, 2025-05-16, 10d
-    Audit Logging      :done,    des3, 2025-05-26, 14d
-    section Future Enhancements
-    CIS Benchmark Compliance :active,  des4, 2025-06-10, 21d
-    Cloud Integration       :         des5, after des4, 14d
-    Container Hardening     :         des6, after des5, 21d
-```
-
 ---
 
 ## Hardening Areas Covered (Manual & Automated)
