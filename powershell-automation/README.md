@@ -54,10 +54,12 @@ All scripts are located in the `scripts/` subdirectory.
 | `Check-LastPatchTime.ps1`            | Attempts to determine the last time Windows Updates were successfully installed.         |
 | `Verify-AntivirusStatus.ps1`         | Checks the status of installed Antivirus software (Windows Defender and third-party via WMI). |
 | `Audit-ScheduledTasks.ps1`           | Lists scheduled tasks with details on actions, triggers, and run-as users.             |
+| `Get-FirewallRules.ps1`              | Retrieves Windows Firewall rules with optional filtering by state, direction, and action. |
 | `Get-NetworkConnectionsSnapshot.ps1` | Captures current TCP connections and UDP listeners, optionally saving to CSV.            |
 | `Collect-VolatileData.ps1`           | Gathers live volatile data like logged-on users, ARP cache, and DNS cache.             |
 | `Get-LowDiskSpace.ps1`               | Checks local fixed disks for low free space below a specified threshold.                 |
 | `Clear-TemporaryFiles.ps1`           | Identifies and optionally deletes files from common temporary locations (use with caution). |
+| `Get-FirewallRulesSummary.ps1`       | Provides a high-level summary of firewall rules and highlights potentially risky configurations. |
 
 > **Note:** For detailed information on parameters, examples, and full descriptions for any script listed above, please use the `Get-Help` cmdlet from within the `scripts/` directory. For example: `Get-Help .\Get-SystemInfo.ps1 -Full`
 
