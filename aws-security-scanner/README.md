@@ -1,6 +1,35 @@
 # AWS Security Scanner
 
-A simple Python tool that scans AWS resources for common security misconfigurations. The focus is on S3 buckets, which are frequently misconfigured and can lead to data breaches.
+![Python](https://img.shields.io/badge/Python-3.7+-blue) ![AWS](https://img.shields.io/badge/AWS-Security-green) ![License](https://img.shields.io/badge/License-MIT-yellow)
+
+A Python tool for detecting common security misconfigurations in AWS S3 buckets. Identifies publicly accessible buckets, missing encryption, and other security vulnerabilities with detailed remediation recommendations.
+
+## 🔒 Security Impact
+
+This project demonstrates critical cloud security principles:
+- **Asset Discovery**: Automated identification of S3 bucket misconfigurations
+- **Risk Assessment**: Systematic evaluation of security posture across AWS resources
+- **Compliance Monitoring**: Alignment with AWS security best practices and frameworks
+- **Proactive Security**: Early detection before exploitation by threat actors
+
+### Threat Model
+```mermaid
+graph TD
+    A[Attacker] -->|Reconnaissance| B(Public S3 Buckets)
+    B --> C[Data Exfiltration]
+    B --> D[Data Manipulation]
+    B --> E[Service Disruption]
+    F[AWS Security Scanner] -->|Detects Risks| G[Security Team]
+    G -->|Remediate| H[Secure Configuration]
+    H -->|Prevents| I[Data Breaches]
+```
+
+## ☁️ Cloud Security Relevance
+
+1. **S3 Security**: Directly addresses AWS S3 bucket misconfigurations - a leading cause of data breaches
+2. **Compliance**: Supports CIS AWS Foundations Benchmark and SOC 2 requirements
+3. **Cost Control**: Prevents costly security incidents from misconfigured cloud storage
+4. **DevSecOps Integration**: Enables automated security checks in CI/CD pipelines
 
 ## Features
 

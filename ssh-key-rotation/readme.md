@@ -1,12 +1,44 @@
 # SSH Key Rotation Script
 
-## Overview
-This project provides a script to safely rotate SSH keypairs for remote Linux servers. The script automates key generation, safely adds the new public key, verifies login before removal, and backs up the remote `authorized_keys` file. It also detects the fingerprint of the existing key and prompts before removing the old key to prevent accidental lockouts.
+![Bash](https://img.shields.io/badge/Shell-Bash-green) ![Linux](https://img.shields.io/badge/Platform-Linux-yellow) ![Security](https://img.shields.io/badge/Focus-Key%20Management-red) ![License](https://img.shields.io/badge/License-MIT-blue)
+
+An automated script for safely rotating SSH keypairs on remote Linux servers with comprehensive safety features and audit logging. This tool demonstrates security automation best practices for credential management and access control.
+
+## 🔒 Security Impact
+
+This project demonstrates critical access management principles:
+- **Credential Hygiene**: Automated rotation reduces risk of compromised or stale keys
+- **Zero-Downtime Security**: Safe key rotation without service interruption
+- **Audit Trail**: Comprehensive logging for compliance and forensic analysis
+- **Fail-Safe Design**: Multiple safety checks prevent accidental lockouts
+
+### Key Rotation Workflow
+```mermaid
+graph TD
+    A[Generate New Key] -->|Backup| B(Backup authorized_keys)
+    B --> C[Add New Public Key]
+    C --> D[Test New Key Login]
+    D -->|Success| E[Prompt for Old Key Removal]
+    D -->|Failure| F[Abort - Keep Old Key]
+    E -->|Confirmed| G[Remove Old Key]
+    E -->|Declined| H[Keep Both Keys]
+    G --> I[Rotation Complete]
+    H --> I
+    F --> J[Manual Investigation Required]
+```
+
+## 🛡️ Cybersecurity Relevance
+
+1. **Access Control**: Implements principle of least privilege through key lifecycle management
+2. **Incident Response**: Enables rapid credential rotation during security incidents
+3. **Compliance**: Supports regulatory requirements for periodic credential rotation
+4. **Risk Reduction**: Minimizes exposure window for potentially compromised credentials
 
 ## Why Rotate SSH Keys?
-- Reduce the risk of compromised or stale keys.
-- Follow best practices for credential hygiene.
-- Demonstrate real-world security automation.
+- Reduce the risk of compromised or stale keys
+- Follow best practices for credential hygiene and access management
+- Demonstrate real-world security automation and DevSecOps practices
+- Enable rapid response to potential security incidents
 
 ## Prerequisites
 
@@ -22,7 +54,12 @@ This project provides a script to safely rotate SSH keypairs for remote Linux se
 -   The `<remote_user>` must have a `~/.ssh` directory on the remote server, and permissions to write to their own `~/.ssh/authorized_keys` file.
 -   Network connectivity from the local machine to the remote server on the SSH port.
 
-## iyD
+## Usage
+
+```bash
+./rotate-ssh-key.sh <remote_user> <remote_host>
+```
+
 Example:
 ```bash
 ./rotate-ssh-key.sh enzo 192.168.64.2
@@ -31,23 +68,21 @@ Example:
 ### Log Level Configuration
 You can set the log level using the `SSH_KEY_ROTATION_LOG_LEVEL` environment variable:
 
-```Usg
-```b 
-lhmoel+xGFoO,SS-N,h-.sh
-./OE-- n-ssh-4.2.s<_u><emo_ht>
+```bash
+# Available log levels: DEBUG, INFO, SUCCESS, WARNING, ERROR
+SSH_KEY_ROTATION_LOG_LEVEL=DEBUG ./rotate-ssh-key.sh enzo 192.168.64.2
 ```
 
-Exmp:
-```ba
-./ot-ssh-sez192.168.64.2
-```
+Example with different log levels:
+```bash
+# Run with INFO level (default)
+./rotate-ssh-key.sh enzo 192.168.64.2
 
-###LgLlCnfigra
-Youcantloglvlust`SSH_KEY_ROTATION_LOG_LEVEL`nvionmnvabl:
+# Run with DEBUG level for detailed output
+SSH_KEY_ROTATION_LOG_LEVEL=DEBUG ./rotate-ssh-key.sh enzo 192.168.64.2
 
-```bah
-#Avalabloglevl: DEBUG, INFO,SUCCESS,WARNING ERROR
-SSH_KEY_ROTATION_LOG_LEVEL=DEBUGrote-ss-hz192.168.642
+# Run with WARNING level for minimal output
+SSH_KEY_ROTATION_LOG_LEVEL=WARNING ./rotate-ssh-key.sh enzo 192.168.64.2
 ```
 
 ## 🛡️ Safety Features
