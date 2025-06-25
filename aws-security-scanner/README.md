@@ -15,13 +15,10 @@ This project demonstrates critical cloud security principles:
 ### Threat Model
 ```mermaid
 graph TD
-    A[Attacker] -->|Reconnaissance| B(Public S3 Buckets)
-    B --> C[Data Exfiltration]
-    B --> D[Data Manipulation]
-    B --> E[Service Disruption]
-    F[AWS Security Scanner] -->|Detects Risks| G[Security Team]
-    G -->|Remediate| H[Secure Configuration]
-    H -->|Prevents| I[Data Breaches]
+    A[Attacker] -->|"Recon"| B(Public Buckets)
+    B --> C[Security Risks]
+    F[Scanner] -->|"Finds Issues"| G[Security Team]
+    G -->|"Fix"| H[Secure Config]
 ```
 
 ## ☁️ Cloud Security Relevance

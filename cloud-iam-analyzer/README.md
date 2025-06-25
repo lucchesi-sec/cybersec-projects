@@ -15,12 +15,10 @@ This project demonstrates critical cloud security principles:
 ### Threat Model
 ```mermaid
 graph TD
-    A[Attacker] -->|Compromised Credentials| B(Excessive IAM Permissions)
-    B --> C[Data Exfiltration]
-    B --> D[Resource Destruction]
-    B --> E[Privilege Escalation]
-    F[IAM Policy Analyzer] -->|Identifies Risks| G[Security Team]
-    G -->|Remediate| H[Secure Configuration]
+    A[Attacker] -->|"Compromised Credentials"| B(Excessive Permissions)
+    B --> C[Data/Resource Risks]
+    F[Analyzer] -->|"Identifies Risks"| G[Security Team]
+    G -->|"Remediate"| H[Secure Config]
 ```
 
 ## ☁️ Cloud Security Relevance

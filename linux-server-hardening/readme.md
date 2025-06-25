@@ -19,14 +19,10 @@ This project demonstrates key defensive security principles through layered secu
 
 ```mermaid
 graph TD
-    A[Attacker] -->|Port Scanning| B(Network Access)
-    B -->|SSH Brute Force| C[Firewall]
-    C -->|Allowed Port 22| D[SSH Service]
-    D -->|Key-based Auth| E[Fail2ban]
-    E -->|Block Brute-force| F[System Access]
-    F -->|Audit Logging| G[Auditd]
-    G -->|Monitor Activity| H[Security Alerts]
-    H -->|Respond| I[Admin]
+    A[Attacker] -->|"Network Attack"| B[Defense Layers]
+    B --> C[System Access]
+    C -->|"Auditing"| D[Security Alerts]
+    D -->|"Response"| E[Remediation]
 ```
 
 ## ☁️ Cloud Security Relevance

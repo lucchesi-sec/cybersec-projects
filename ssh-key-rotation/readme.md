@@ -15,16 +15,11 @@ This project demonstrates critical access management principles:
 ### Key Rotation Workflow
 ```mermaid
 graph TD
-    A[Generate New Key] -->|Backup| B(Backup authorized_keys)
-    B --> C[Add New Public Key]
-    C --> D[Test New Key Login]
-    D -->|Success| E[Prompt for Old Key Removal]
-    D -->|Failure| F[Abort - Keep Old Key]
-    E -->|Confirmed| G[Remove Old Key]
-    E -->|Declined| H[Keep Both Keys]
-    G --> I[Rotation Complete]
-    H --> I
-    F --> J[Manual Investigation Required]
+    A[New Key] -->|"Backup & Add"| B[Test Login]
+    B -->|Success| C[Remove Old Key?]
+    B -->|Failure| D[Abort]
+    C -->|Yes| E[Rotation Complete]
+    C -->|No| E
 ```
 
 ## 🛡️ Cybersecurity Relevance

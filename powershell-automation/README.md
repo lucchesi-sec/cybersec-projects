@@ -15,17 +15,10 @@ This project demonstrates essential Windows security operations:
 ### Security Operations Workflow
 ```mermaid
 graph TD
-    A[Security Event] -->|Detection| B(PowerShell Scripts)
-    B --> C[System Information Gathering]
-    B --> D[Log Analysis]
-    B --> E[Process Monitoring]
-    B --> F[Network Analysis]
-    C --> G[Security Assessment]
-    D --> G
-    E --> G
-    F --> G
-    G -->|Actionable Intelligence| H[Response Decision]
-    H -->|Remediation| I[Security Actions]
+    A[Security Event] -->|"Detection"| B(Scripts)
+    B --> C[Data Collection]
+    C --> D[Security Assessment]
+    D -->|"Insights"| E[Response]
 ```
 
 ## 🛡️ Cybersecurity Relevance
