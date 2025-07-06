@@ -4,8 +4,7 @@ disable-default-queries: false
 queries:
   - uses: security-and-quality
 paths:
-  - aws-security-scanner/
-  - cloud-iam-analyzer/
+  - aws-security-suite/
   - linux-server-hardening/
   - malware-analysis-lab/
   - password-analyzer/
