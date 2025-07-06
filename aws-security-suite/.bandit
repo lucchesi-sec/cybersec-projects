@@ -1,0 +1,29 @@
+# Bandit security scanner configuration
+[bandit]
+
+# Files and directories to exclude from scanning
+exclude_dirs = [
+    "tests",
+    "venv", 
+    ".venv",
+    "build",
+    "dist"
+]
+
+# Skip specific test IDs (customize based on your needs)
+skips = [
+    "B101",  # assert_used - Allow asserts in tests
+    "B601"   # paramiko_calls - Not using paramiko
+]
+
+# Confidence levels: LOW, MEDIUM, HIGH
+confidence = ["MEDIUM", "HIGH"]
+
+# Severity levels: LOW, MEDIUM, HIGH
+severity = ["MEDIUM", "HIGH"]
+
+# Output format options: csv, json, txt, xml, yaml
+format = "txt"
+
+# Include line numbers in output
+show_source_details = true

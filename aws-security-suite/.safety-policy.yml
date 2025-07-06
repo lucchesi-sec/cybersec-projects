@@ -1,0 +1,28 @@
+# Safety security scanner configuration
+security:
+  # Continue scanning even if vulnerabilities are found
+  continue-on-error: false
+  
+  # Only report vulnerabilities with severity >= medium
+  minimum-severity: medium
+  
+  # Ignore specific vulnerabilities (use CVE IDs)
+  ignore-vulnerabilities:
+    # Example: - 12345  # Description of why this is ignored
+    
+  # Ignore vulnerabilities in specific packages
+  ignore-packages:
+    # Example: - package-name  # Description of why this is ignored
+    
+# Report configuration  
+report:
+  # Output format: json, text, bare
+  format: text
+  
+  # Include full vulnerability details
+  full-report: true
+  
+# Update configuration
+update:
+  # Check for updates to the vulnerability database
+  check-updates: true
