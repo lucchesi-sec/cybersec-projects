@@ -47,7 +47,7 @@ choco install python3 git
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/your-org/cybersec-projects.git
+git clone https://github.com/lucchesi-sec/cybersec-projects.git
 cd cybersec-projects/aws-security-suite
 ```
 

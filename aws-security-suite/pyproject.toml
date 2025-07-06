@@ -63,8 +63,8 @@ security = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/aws-security-suite"
-Repository = "https://github.com/your-org/aws-security-suite"
+Homepage = "https://github.com/lucchesi-sec/cybersec-projects/tree/main/aws-security-suite"
+Repository = "https://github.com/lucchesi-sec/cybersec-projects"
 Documentation = "https://aws-security-suite.readthedocs.io"
 
 [project.scripts]
