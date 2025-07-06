@@ -187,7 +187,7 @@ if [[ -f "$OLD_KEYS_FILE_PATH" ]]; then
         fi
 
         # Expand tilde to home directory
-        local expanded_path
+        expanded_path=""
         eval expanded_path="$old_key_pub_path"
 
         if [[ -f "$expanded_path" ]]; then
