@@ -104,6 +104,17 @@ aws-security-suite permissions
 - [ ] Custom compliance framework support
 - [ ] Advanced threat detection and correlation
 
+## Documentation
+
+- **[Installation Guide](./INSTALLATION_GUIDE.md)** - Detailed setup and configuration instructions
+- **[User Guide](./USER_GUIDE.md)** - Comprehensive usage documentation and examples
+- **[Troubleshooting](./TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Security](./SECURITY.md)** - Security considerations and best practices
+- **[Compliance Mapping](./COMPLIANCE_MAPPING.md)** - Framework mappings and control references
+- **[Implementation Report](./EC2_SECURITY_IMPLEMENTATION_REPORT.md)** - Detailed EC2 security implementation
+- **[Security Fixes Summary](./SECURITY_FIXES_SUMMARY.md)** - Summary of security enhancements
+- **[Async Foundation](./ASYNC_FOUNDATION_IMPLEMENTATION.md)** - Technical implementation details
+
 ## Development
 
 ```bash
