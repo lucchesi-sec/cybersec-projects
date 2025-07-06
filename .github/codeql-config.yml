@@ -5,6 +5,8 @@ queries:
   - uses: security-and-quality
 paths:
   - aws-security-scanner/
+  - cloud-iam-analyzer/
+  - linux-server-hardening/
   - malware-analysis-lab/
   - password-analyzer/
-  - powershell-automation/
+  - ssh-key-rotation/
