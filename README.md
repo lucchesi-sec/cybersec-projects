@@ -12,14 +12,15 @@ Each project is self-contained within its respective directory. For detailed inf
 
 ## 📂 Projects
 
-### [AWS IAM Policy Analyzer](./cloud-iam-analyzer/)
+### [AWS Security Suite](./aws-security-suite/)
 ![Python](https://img.shields.io/badge/Python-3.11-blue) ![AWS](https://img.shields.io/badge/AWS-Security-green)
 
-Identifies excessive permissions in AWS IAM policies:
-- Detects wildcard actions and resources
-- Flags sensitive permissions (Delete, Put, Update)
-- Provides risk assessment with remediation guidance
-- Supports text and JSON output formats
+Comprehensive AWS security suite with enterprise security hardening:
+- Multi-service security scanning (EC2, S3, RDS, Lambda, IAM)
+- Asynchronous scanning with rate limiting and context awareness
+- Real-time monitoring and automated remediation capabilities
+- NIST, CIS, and SOC 2 compliance mapping
+- Advanced reporting with export capabilities
 
 ---
 
@@ -80,17 +81,17 @@ Includes comprehensive analysis script, YARA rules, and educational documentatio
 
 ---
 
-### [AWS Security Scanner](./aws-security-scanner/)
-![Python](https://img.shields.io/badge/Python-3.11-blue) ![AWS](https://img.shields.io/badge/AWS-Security-green)
+## 🔗 Related Repositories
 
-A Python tool for detecting common security misconfigurations in AWS S3 buckets:
-- Identifies publicly accessible buckets
-- Checks for server-side encryption settings
-- Verifies access logging configuration
-- Provides detailed remediation recommendations
-- Generates formatted reports for security review
+### [Linux Automation Scripts](https://github.com/lucchesi-sec/linux-automation)
+![Linux](https://img.shields.io/badge/Linux-Automation-yellow) ![Bash](https://img.shields.io/badge/Bash-Scripts-green)
 
-Includes colored CLI output and CSV/text reporting capabilities.
+Collection of Linux automation scripts for system administration and security tasks.
+
+### [PowerShell Automation Scripts](https://github.com/lucchesi-sec/powershell-automation)
+![PowerShell](https://img.shields.io/badge/PowerShell-Automation-blue) ![Windows](https://img.shields.io/badge/Windows-Security-red)
+
+PowerShell automation scripts for Windows security administration and incident response.
 
 ---
 
