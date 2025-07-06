@@ -19,18 +19,19 @@ CURRENT_LOG_LEVEL=$LOG_LEVEL_INFO
 log() {
     local level=$1
     local message=$2
-    local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+    local timestamp
+    timestamp=$(date "+%Y-%m-%d %H:%M:%S")
     local prefix=""
     
     # Only log if level is >= current log level
     if [[ $level -ge $CURRENT_LOG_LEVEL ]]; then
         case $level in
-            $LOG_LEVEL_DEBUG)   prefix="[DEBUG]"   ;;
-            $LOG_LEVEL_INFO)    prefix="[INFO]"    ;;
-            $LOG_LEVEL_SUCCESS) prefix="[SUCCESS]" ;;
-            $LOG_LEVEL_WARNING) prefix="[WARNING]" ;;
-            $LOG_LEVEL_ERROR)   prefix="[ERROR]"   ;;
-            *)                  prefix="[UNKNOWN]" ;;
+            "$LOG_LEVEL_DEBUG")   prefix="[DEBUG]"   ;;
+            "$LOG_LEVEL_INFO")    prefix="[INFO]"    ;;
+            "$LOG_LEVEL_SUCCESS") prefix="[SUCCESS]" ;;
+            "$LOG_LEVEL_WARNING") prefix="[WARNING]" ;;
+            "$LOG_LEVEL_ERROR")   prefix="[ERROR]"   ;;
+            *)                    prefix="[UNKNOWN]" ;;
         esac
         
         echo "$timestamp $prefix $message" | tee -a "$LOG_FILE"
@@ -166,7 +167,7 @@ ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "echo 'Login test success
 log $LOG_LEVEL_SUCCESS "Login test successful with new key"
 
 # Backup authorized_keys
-BACKUP_FILE="~/.ssh/authorized_keys.backup-${BACKUP_DATE}"
+BACKUP_FILE="$HOME/.ssh/authorized_keys.backup-${BACKUP_DATE}"
 log $LOG_LEVEL_INFO "Backing up authorized_keys on remote server to $BACKUP_FILE"
 ssh -i "$NEW_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "cp ~/.ssh/authorized_keys $BACKUP_FILE" || \
     log $LOG_LEVEL_WARNING "Failed to backup authorized_keys file"
@@ -186,6 +187,7 @@ if [[ -f "$OLD_KEYS_FILE_PATH" ]]; then
         fi
 
         # Expand tilde to home directory
+        local expanded_path
         eval expanded_path="$old_key_pub_path"
 
         if [[ -f "$expanded_path" ]]; then

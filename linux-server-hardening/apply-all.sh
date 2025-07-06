@@ -13,7 +13,8 @@ check_sudo() {
 # Function to execute a script
 run_script() {
     local script_path="$1"
-    local script_name=$(basename "$script_path")
+    local script_name
+    script_name=$(basename "$script_path")
 
     echo "----------------------------------------"
     echo "Running $script_name..."
