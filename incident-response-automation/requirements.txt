@@ -1,0 +1,76 @@
+# Incident Response Automation Suite Dependencies
+
+# Core automation
+asyncio==3.4.3
+schedule==1.2.0
+celery==5.3.4
+
+# Data processing and analysis
+pandas==2.1.3
+numpy==1.24.3
+scikit-learn==1.3.2
+
+# Network analysis
+scapy==2.5.0
+netaddr==0.9.0
+python-whois==0.8.0
+
+# Log processing
+python-logstash==0.4.8
+elasticsearch==8.11.0
+loguru==0.7.2
+
+# Threat intelligence
+requests==2.31.0
+python-misp==2.4.175
+taxii2-client==2.3.0
+
+# Security analysis
+yara-python==4.3.1
+pefile==2023.2.7
+python-magic==0.4.27
+
+# Communication and notifications
+slack-sdk==3.23.0
+python-telegram-bot==20.7
+smtplib-ssl==1.1.4
+
+# Cloud integrations
+boto3==1.34.0
+azure-identity==1.15.0
+google-cloud-logging==3.8.0
+
+# Database and storage
+redis==5.0.1
+pymongo==4.6.0
+psycopg2-binary==2.9.9
+
+# Web interface
+fastapi==0.104.1
+uvicorn==0.24.0
+jinja2==3.1.2
+
+# Configuration and serialization
+pyyaml==6.0.1
+pydantic==2.5.0
+toml==0.10.2
+
+# CLI interface
+typer==0.9.0
+rich==13.7.0
+click==8.1.7
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-mock==3.12.0
+pytest-cov==4.1.0
+
+# Security
+cryptography==41.0.7
+bcrypt==4.1.2
+python-jose==3.3.0
+
+# Monitoring and metrics
+prometheus-client==0.19.0
+statsd==4.0.1

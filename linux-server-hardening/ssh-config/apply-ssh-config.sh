@@ -48,6 +48,9 @@ set_ssh_config "PubkeyAuthentication" "yes" "$SSH_CONFIG_FILE" # Ensure pubkey a
 # Set the SSH Banner
 set_ssh_config "Banner" "/etc/issue.net" "$SSH_CONFIG_FILE"
 
+# Disable X11 Forwarding (security risk)
+set_ssh_config "X11Forwarding" "no" "$SSH_CONFIG_FILE"
+
 # --- Optional Recommended Settings ---
 # Uncomment and modify as needed
 

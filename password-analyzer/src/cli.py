@@ -10,6 +10,7 @@ import sys
 import os
 import argparse
 import getpass
+import subprocess
 from pathlib import Path
 import json
 import time
@@ -29,7 +30,14 @@ BOLD = "\033[1m"
 
 def clear_screen():
     """Clear the terminal screen."""
-    os.system('cls' if os.name == 'nt' else 'clear')
+    try:
+        if os.name == 'nt':
+            subprocess.run(['cls'], shell=True, check=True)
+        else:
+            subprocess.run(['clear'], check=True)
+    except subprocess.CalledProcessError:
+        # Fallback: print newlines if clear command fails
+        print('\n' * 50)
 
 
 def print_banner():

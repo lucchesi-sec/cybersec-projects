@@ -13,11 +13,11 @@ fi
 apt update
 apt install -y apt-transport-https openjdk-11-jre # Or a compatible Java version
 
-# Add Elasticsearch repository key
-wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+# Add Elasticsearch repository key (using modern GPG key management)
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
 
-# Add Elasticsearch repository
-echo "deb https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
+# Add Elasticsearch repository with signed-by option
+echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
 
 # Install Elasticsearch
 apt update
