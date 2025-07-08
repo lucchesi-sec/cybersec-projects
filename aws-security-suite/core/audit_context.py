@@ -34,10 +34,6 @@ class AuditContext:
     external_id: Optional[str] = None
     partition: str = "aws"  # Support for aws-gov, aws-cn
     
-    def __post_init__(self):
-        """SECURITY: Validate all inputs after initialization."""
-        self._validate_inputs()
-    
     # Enterprise features
     delegated_admin_account: Optional[str] = None
     organization_role_name: Optional[str] = None
@@ -111,10 +107,15 @@ class AuditContext:
         return {k: v for k, v in os.environ.items() if k not in sensitive_env_vars}
     
     def __post_init__(self):
+        """Initialize defaults and validate all inputs after initialization."""
+        # Set defaults
         if self.regions is None:
             self.regions = [self.region]
         if self.services is None:
             self.services = []
+        
+        # Validate all inputs for security
+        self._validate_inputs()
         
         # Initialize async client manager
         self._setup_async_client_manager()
